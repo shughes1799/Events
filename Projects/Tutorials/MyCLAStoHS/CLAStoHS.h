@@ -26,6 +26,11 @@ class CLAStoHS : public TSelector, public  THSOutput {
   //Additional ouput branches
   THSParticle* fHSgamma;  //the photon beam
   TLorentzVector* fMissing; // The missing 4-vector
+  TLorentzVector* fThreePi; // The invariant 3pi 4-vector
+  TLorentzVector* fTwoPiF;  // The pi- + (fast pi+)
+  TLorentzVector* fTwoPiS;  // The pi- + (slow pi-)
+  Float_t         ft;       //the (neg.) squared momentum transfer
+ 
   //public:
   //Functions used to process data
   void GetEventPartBranches(Int_t evi);         //get the required branches
@@ -427,8 +432,7 @@ public :
 
    //fOutName - if directory will fill with filtered files of the same name as input
    //fOutName - if full filename will just fill the single file with output of all input
-    CLAStoHS(TTree * /*tree*/ =0) : THSOutput(), fHSgamma(0), fMissing(0), fChain(0) { }
-   //CLAStoHS(TTree * /*tree*/ =0) : THSOutput(), fHSgamma(0), fMissing(0), fChain(0) { fOutName="/home/dglazier/Work/Research/HaSpect/data/pippippimMn_HS2/OneFile.root";}
+ CLAStoHS(TTree * /*tree*/ =0) : THSOutput(), fHSgamma(0), fMissing(0), fThreePi(0), fTwoPiF(0), fTwoPiS(0), fChain(0) { }
    virtual ~CLAStoHS();
    virtual Int_t   Version() const { return 2; }
    virtual void    Begin(TTree *tree);

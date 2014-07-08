@@ -79,7 +79,7 @@ void THSOutput::HSNotify(TTree* tree){
   //deal with entry lists
   // fEntryList->SetTree(fCurTree);
   // cout<<fEntryList<<" "<<fCurTree->GetEntryList()<<" "<<fCurTree->GetDirectory()<<endl;
-  if(fOutName.EndsWith(".root")){
+  if(fFile&&fOutName.EndsWith(".root")){
     //Only want to do some things once when writing 1 file only
     if(fStepName.Length()==0){
       InitOutFile(fCurTree); //initialise output file
@@ -143,7 +143,7 @@ void THSOutput::HSTerminate(){
     TEntryList* elist=dynamic_cast<TEntryList*>(fSelOutput->FindObject("HSelist")); //must use the eventlist merged in output list
  
     //Save the overall event list in a new file in output directory
-    TFile* allel=new TFile(fOutName+"/ParentEventList.root","recreate");
+    TFile* allel=new TFile(fOutName+"ParentEventList.root","recreate");
     elist->Write();
     allel->Close();
     delete allel;
@@ -230,10 +230,8 @@ void THSOutput::FinishOutput(){
     Bool_t cleanup = kFALSE;
     TDirectory *savedir = gDirectory;
     fFile->cd();
-    if (!fOutTree) {//no output tree 
-      fSelOutput->Add(fProofFile); //give this proof file to output for merging in case there are histograms
-      fProofFile->Print();
-     }
+    if (!fOutTree) {//no output tree do nothing
+    }
     else  if (fOutTree->GetEntries() > 0) {//if tree has entries save it
       fOutTree->Write(0, TObject::kOverwrite);  //write ouput tree
       fOutTree->Reset();  //remove saved entries

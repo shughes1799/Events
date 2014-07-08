@@ -8,7 +8,7 @@ void UnpackAnalysis(TDirectory *dir, TString BaseDir){
   TIter next(dir->GetListOfKeys());
   TKey *key;
   //Note code will wait on the next line of directory name is not good, i.e. it already exists, or its parent doesn't, difficult to ouput this message to screen
-  while(gSystem->MakeDirectory(BaseDir)!=0){cout<<"This is not an appropriate directory, it either exists already or its parent does not"<<endl; exit(0);}
+  while(gSystem->MakeDirectory(BaseDir)!=0){cout<<"This is not an appropriate directory, it either exists already or its parent does not"<<endl;}
   while ((key = (TKey*)next())) {
     if (key->GetClassName()==TString("TDirectoryFile")) {
       cout<<key->GetName()<<endl;
