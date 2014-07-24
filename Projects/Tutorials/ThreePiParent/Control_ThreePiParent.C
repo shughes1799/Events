@@ -1,10 +1,10 @@
 {
   //Set up the input chain to be analysed
    TChain* tree=new TChain("HSParticles","datachain");
-   tree->Add("/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HS/Decay/inp*root");
+   tree->Add("/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HSID/Decay/inp*root");
    //Set the ouput directory or file (if full file name is given just 1 file is created, while if a directory it will be created and filled with files of the same name as the input 
    gSystem->Setenv("HSOUT",
-		   "/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HS/Decay/Hists.root");
+		   "/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HSID/Decay/Hists.root");
    
    //Configure the analysis (i.e PROOF, source compilation...)
    TString HSANA=gSystem->Getenv("HSANA");
@@ -16,8 +16,8 @@
    //If many files were ouput the event list will be in the same directory with the name ParentEventList.root
    //HSEntryList("/PATH TO PERVIOUS EVENTLIST/ParentEventList.root");
   //we are linking to a parent selector so need to load its source code here
- gROOT->LoadMacro("ThreePiDecay.C++");
- if(prf) prf->Load("ThreePiDecay.C+");
+  gROOT->LoadMacro("ThreePiDecay.C++");
+  if(prf) prf->Load("ThreePiDecay.C+");
 
    tree->Process("ThreePiParent.C++");
 

@@ -1,8 +1,8 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Tue Jul  8 09:58:00 2014 by ROOT version 5.34/14
+// Tue Jul 22 09:12:37 2014 by ROOT version 5.34/14
 // from TTree HSParticles/A tree containing reconstructed particles
-// found on file: /home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HS/Decay/inp2_50.root
+// found on file: /home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HSID/Decay/inp2_50.root
 //////////////////////////////////////////////////////////
 
 #ifndef ThreePiParent_h
@@ -28,10 +28,12 @@ public :
    // Declaration of leaf types
    TLorentzVector  *TwoPiCM;
    TLorentzVector  *OnePiCM;
+   Int_t           fgID;
 
    // List of branches
    TBranch        *b_TwoPiCM;   //!
    TBranch        *b_OnePiCM;   //!
+   TBranch        *b_fgID;   //!
 
    ThreePiParent(TTree * /*tree*/ =0) : fChain(0) { }
    virtual ~ThreePiParent() { }
@@ -75,11 +77,10 @@ void ThreePiParent::Init(TTree *tree)
    if (!tree) return;
    fChain = tree;
    fChain->SetMakeClass(1);
-   THSOutput::InitParent(fChain,"HSStep_1");
-   fParent.Init(fParentTree);
 
    fChain->SetBranchAddress("TwoPiCM", &TwoPiCM, &b_TwoPiCM);
    fChain->SetBranchAddress("OnePiCM", &OnePiCM, &b_OnePiCM);
+   fChain->SetBranchAddress("fgID", &fgID, &b_fgID);
 }
 
 Bool_t ThreePiParent::Notify()
@@ -90,6 +91,8 @@ Bool_t ThreePiParent::Notify()
    // to the generated code, but the routine can be extended by the
    // user if needed. The return value is currently not used.
    THSOutput::HSNotify(fChain);
+   THSOutput::InitParent(fChain,"HSStep_1");
+   fParent.Init(fParentTree);
 
    return kTRUE;
 }

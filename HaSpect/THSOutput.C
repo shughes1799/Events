@@ -20,9 +20,12 @@
 #include <TDatabasePDG.h>
 #include <TSystem.h>
 #include <TEntryList.h>
+#include <TObjArray.h>
 #include <TROOT.h>
 #include <TH3.h>
 #include <TKey.h>
+#include <TProof.h>
+#include <TTreeIndex.h>
 #include <iostream>
 #include <algorithm>
 #include "THSOutput.h"
@@ -49,7 +52,7 @@ void THSOutput::HSBegin(TList* input,TList* output){
   fCodeList->SetName("CodeList");
   ImportSysDirtoList(gSystem->pwd(),fCodeList);//the directory the user analysis code is in
   ImportSysDirtoList(gSystem->Getenv("HSANA"),fCodeList); //the directory the HasPEct core code is
-  if(fSelInput)fSelInput->Add(fCodeList);//add to input so can give to Slaves, if fInput doesn't exit then not running on PROOF and this fCodeList is OK
+  if(gProof)fSelInput->Add(fCodeList);//add to input so can give to Slaves, if fInput doesn't exit then not running on PROOF and this fCodeList is OK
   
 }
 void  THSOutput::HSSlaveBegin(TList* input,TList* output){
@@ -88,7 +91,9 @@ void THSOutput::HSNotify(TTree* tree){
     }
     else return; //only saving one combined file
   }
-  //Case only making one ouput file
+  //Check if gID exists in current tree, if not will start saving it now
+  if(!tree->GetBranch("fgID")) fSaveID=kTRUE;
+  //Case only making one output file
   FinishOutput(); //close the last file
   InitOutFile(fCurTree);   //start the new file
   return;
@@ -98,6 +103,8 @@ void THSOutput::HSProcessStart(Long64_t entry){
   fEntry=entry;
 }
 void THSOutput::HSProcessFill(){
+  if(fSaveID) fgID=fEntry;
+  else if(fOutTree) fCurTree->GetBranch("fgID")->GetEntry(fEntry); //make sure get ID branch to write to new file
   if(fEntryList)fEntryList->Enter(fEntry);
   if(fOutTree) fOutTree->Fill();
 }
@@ -128,7 +135,23 @@ void THSOutput::HSTerminate(){
       file->cd(fStepName); //move into new directory
       fEntryList->Write(0,TObject::kOverwrite); //save event list in here too
     }
-     if(file) {
+    //If kinematic bins to be saved save them
+    //note this is currently only implemented for one .root ouput file
+    //the entry lists themselves know which tree from the chain to use
+    //Note again the entry list must be saved after the PROOF merge
+    //This makes sure all treenames etc. are correct
+     if(file) file->cd();
+     TDirectory *curDir = gDirectory->mkdir("HSKinBinEntries");
+    curDir->cd();
+    next.Begin();
+    Long64_t Nkbevs=0;
+    while ((key = (TKey*)next()))if(TString(key->GetName()).Contains("HSBin")){//find the HSBin  list
+	fSelOutput->FindObject(fStepName=key->GetName())->Write();
+	Nkbevs+=((TEntryList*)fSelOutput->FindObject(fStepName=key->GetName()))->GetN();
+      }
+    cout<<"Saved "<< Nkbevs<<" to kin bin entry lists"<<endl;
+    //saved kinematic bin entries
+    if(file) {
       file->Close();
       savedir->cd();
       delete file;	
@@ -152,8 +175,17 @@ void THSOutput::HSTerminate(){
     while((outo=dynamic_cast<TObject*>(next()))){
       if((elpofile=dynamic_cast<TProofOutputFile*>(outo))){
 	TFile* elfile = elpofile->OpenFile("UPDATE");
-	//change the name of the histogram Bin name to give meaningful kinematics
-	//	if(elfile) THSHisto::ChangeNames(elfile);
+	//First sort tree to regain original ordering
+	if(gProof){
+	  TIter fnext(elfile->GetListOfKeys());
+	  TKey* fkey=0;
+	  //Look for a trees in saved file
+	  while ((fkey = (TKey*)fnext())){
+	    if(TString(fkey->GetClassName())==TString("TTree")){//find the HSStep list
+	      SortTree(dynamic_cast<TTree*>(elfile->Get(fkey->GetName())));
+	    }
+	  }
+	}//done reordering if proof
 	//now look for source code directory 
 	TIter nextf(elfile->GetListOfKeys());
 	TKey* key=0;
@@ -225,7 +257,7 @@ void THSOutput::InitOutput(){
    }//end intype loop
 }
 void THSOutput::FinishOutput(){
-  // Write the ntuple to the file
+   // Write the ntuple to the file
   if (fFile) {
     Bool_t cleanup = kFALSE;
     TDirectory *savedir = gDirectory;
@@ -254,6 +286,7 @@ void THSOutput::FinishOutput(){
 	hf->Write();
 	hf->Reset(""); //remove saved histogram entries for next file
       }
+   
     }
     gDirectory = savedir;
     fFile->Close(); //Close this file
@@ -275,18 +308,75 @@ void THSOutput::InitParent(TTree* ctree,TString step){
   //and the fParent.Init(fParentTree) should be called after this 
   //function in the current selector Init()
   TDirectory* savedir=gDirectory;
+  cout<<step<<endl;
+  // exit(1);
   //get the entry list of the parent from te file of the current tree
   TFile* infile=ctree->GetCurrentFile();
-  TEntryList* el=(TEntryList*)infile->Get(step+"/HSelist");
-  if(!el){ Error("THSOuput::InitParent","No valid event list found");return;}
+  //Get the chain of entry lists leading to the selected parent list
+  //This allows determination of the parent entry number if several
+  //sequences of filtering have been performed
+  TString tempstep=step; //"e.g. Step_2/Step_1/Step_0
+  TEntryList* oldel=0;
+  tempstep+="/temp";
+  if(!fParEntryLists) fParEntryLists=new TList();
+  else fParEntryLists->Clear();
+  while ((tempstep=gSystem->DirName(tempstep))){//loop through step directories
+   if(tempstep==".") break;
+   cout<<tempstep<<endl;
+   TEntryList* el=(TEntryList*)infile->Get(tempstep+"/HSelist");
+   cout<<el->GetN()<<endl;
+   if(oldel) if(oldel->GetN()==el->GetN())
+	       continue;//no need to add as contains the same entries
+   fParEntryLists->Add(el);//Add to list of entry lists
+   cout<<"Added list "<<fParEntryLists->GetEntries()<<endl;
+   oldel=el;
+ }
+
+   // if(!el){ Error("THSOuput::InitParent","No valid event list found");return;}
+  if(fParEntryLists->GetEntries()==0){ Error("THSOuput::InitParent","No valid event list found");return;}
   //delete previous tree file
   if(fParentFile) {fParentFile->Close(); SafeDelete(fParentFile);fParentTree=0;}
   //get the new parent file and tree from the entrylist
+  //Get the actual parent event list
+  TEntryList* el=(TEntryList*)infile->Get(step+"/HSelist");
+  cout<<"PArent file name "<<el->GetFileName()<<" "<<el->GetN()<<" "<<el->GetLists()<<endl;
   fParentFile=new TFile(el->GetFileName());
   fParentTree=(TTree*)fParentFile->Get(el->GetTreeName());
+  // fParentTree->SetEntryList(el); //not required as get entry in this code
   savedir->cd();
 }
-
+Long64_t THSOutput::GetParentEntry(Long64_t parentry){
+  //Moves through the list of parent entry lists to find the correct 
+  //parent entry number for this "entry" of the child 
+  TEntryList* iel=0;     
+  //Long64_t parentry;      
+  for(Int_t i=fParEntryLists->GetEntries()-1;i>-1;i--){
+   iel=(TEntryList*)fParEntryLists->At(i);
+   parentry=iel->GetEntry(parentry);
+  }
+  return parentry;
+}
+void THSOutput::SortTree(TTree* tree){
+  //reorder events in the tree so the order is preserved
+  //typically PROOF will reorder events, but order preservation is
+  //useful for connecting with parent trees
+  //Make sure the file you are writing to is the current directory
+  
+  //order the events based on the global ID variable, which came from the original tree
+  cout<<"Sorting tree"<<endl;
+  if(!tree) return;
+  if(!tree->GetBranch("fgID")) return;
+  cout<<" Make index "<< tree->BuildIndex("fgID")<<endl;
+  TTreeIndex *index = (TTreeIndex*)tree->GetTreeIndex();
+  TTree* cltree=tree->CloneTree(0); //create empty tree with branch adresses set
+  cltree->SetAutoSave();
+  for( int i =  0; i < index->GetN() ; i++ ) {
+    Long64_t local = tree->LoadTree( index->GetIndex()[i] );
+    tree->GetEntry(local);
+    cltree->Fill(); //fill as ordered by the build index
+  }
+  cltree->Write("",TObject::kOverwrite); //replace current tree
+}
 void THSOutput::PrepareOutDir(){
   //Make the outpur directory if requested
   //If it exists exit so we do not copy over any files
@@ -297,7 +387,7 @@ void THSOutput::PrepareOutDir(){
     }
 }
 void THSOutput::InitOutFile(TTree* chain){
-  //check fOutName to see if making 1 or many files
+   //check fOutName to see if making 1 or many files
   if(fFile&&fOutName.EndsWith(".root"))return;//only saving one file
 
   //create a new output file to save tree to
@@ -308,7 +398,8 @@ void THSOutput::InitOutFile(TTree* chain){
     ofname =gSystem->BaseName((chain->GetCurrentFile()->GetName()));
     ofname.Prepend(fOutName+"/");
   }
-   Info("Notify", "processing file: %s", ofname.Data());
+  cout<<"InitOut "<<ofname<<endl;
+  Info("Notify", "processing file: %s", ofname.Data());
    if(fFile)	SafeDelete(fFile);
    //  if(fProofFile)	SafeDelete(fProofFile);
   cout<<"Making new proof file "<<ofname<<endl;
@@ -326,6 +417,10 @@ void THSOutput::InitOutFile(TTree* chain){
    if(fOutTree){
      fOutTree->SetDirectory(fFile);
      fOutTree->AutoSave();
+     cout<<fOutTree->GetBranch("fgID")<<fSaveID<<endl;
+     if(!fOutTree->GetBranch("fgID"))fOutTree->Branch("fgID", &fgID, "fgID/I");
+     if(!fSaveID)//copy existing global ID
+       fOutTree->SetBranchAddress("fgID",chain->GetBranch("fgID")->GetAddress());
    }
    
    //Save all relevent source code to the ROOT file so analysis can be rerun

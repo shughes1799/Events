@@ -55,7 +55,7 @@ void ThreePiParent::SlaveBegin(TTree * /*tree*/)
    //fHisbins->SetYTitle();//give useful axis name
    THSHisto::ChangeNames();
    THSHisto::LoadCut("NoCut");
-   THSHisto::LoadCut("Eg_gt_3");
+   THSHisto::LoadCut("Eg_gt_3"); 
    THSHisto::LoadHistograms();
 }
 
@@ -83,13 +83,12 @@ Bool_t ThreePiParent::Process(Long64_t entry)
    //
    // The return value is currently not used.
    GetEntry(entry); //lazy and slow, you can speed the code up by getting the branches you need to use instead
-   fParent.GetEntry(entry);
+   fParent.GetEntry(GetParentEntry(entry)); //lazy and slow, optimise your own analysis by only getting the branches you need
    //Ready to do some analysis here, before the Fill
    
    //Int_t kinBin=GetKinBin();//if fHisbins is defined need to give this meaningful arguments
-   //FillHistograms("Cut1",kinBin);
    FillHistograms("NoCut",0);
-   if(fParent.beam->P4().E()>3) FillHistograms("Eg_gt_3",0);
+   if(fParent.beam->P4().E()>3) FillHistograms("Eg_gt_3",0);   
    THSOutput::HSProcessFill(); 
 
 
@@ -118,9 +117,11 @@ void ThreePiParent::HistogramList(TString sLabel){
   //now define all histograms and add to Output
   //label includes kinematic bin and additional cut name
   // e.g fOutput->Add(MapHist(new TH1F("Mp1"+sLabel,"M_{p1}"+sLabel,100,0,2)));
-  fOutput->Add(MapHist(new TH2F("Theta2pi_V_t"+sLabel,"#theta_{2pi} v t"+sLabel,90,0,180,50,0,5)));
   //end of histogram list
-  TDirectory::AddDirectory(kTRUE); //back to normal
+  fOutput->Add(MapHist(new TH2F("Theta2pi_V_t"+sLabel,"#theta_{2pi} v t"+sLabel,90,0,180,50,0,5)));
+   fOutput->Add(MapHist(new TH2F("Theta2piCM_V_LAB"+sLabel,"#theta_{2pi} CM V LAB"+sLabel,90,0,180,90,0,180)));
+   fOutput->Add(MapHist(new TH2F("TwoPiMCM_V_LAB"+sLabel,"TwoPiM CM V LAB"+sLabel,100,0.5,2,100,0.5,2)));  
+   TDirectory::AddDirectory(kTRUE); //back to normal
 }
 void ThreePiParent::FillHistograms(TString sCut,Int_t bin){
   fCurrCut=sCut;
@@ -129,6 +130,7 @@ void ThreePiParent::FillHistograms(TString sCut,Int_t bin){
   //Fill histogram
   TString sLabel;
   sLabel=sCut+fVecBinNames[bin];
-  // e.g. FindHist("Mp1"+sLabel)->Fill(fp1->M());
   FindHist("Theta2pi_V_t"+sLabel)->Fill(TwoPiCM->Theta()*TMath::RadToDeg(),fParent.t);
+  FindHist("Theta2piCM_V_LAB"+sLabel)->Fill(TwoPiCM->Theta()*TMath::RadToDeg(),fParent.TwoPiF->Theta()*TMath::RadToDeg());
+  FindHist("TwoPiMCM_V_LAB"+sLabel)->Fill(TwoPiCM->M(),fParent.TwoPiF->M());  // e.g. FindHist("Mp1"+sLabel)->Fill(fp1->M());
 }

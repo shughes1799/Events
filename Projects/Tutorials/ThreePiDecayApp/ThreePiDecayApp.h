@@ -1,8 +1,8 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Mon Jul  7 21:56:39 2014 by ROOT version 5.34/14
+// Mon Jul 21 11:26:26 2014 by ROOT version 5.34/14
 // from TTree HSParticles/A tree containing reconstructed particles
-// found on file: /home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HS/inp2_50.root
+// found on file: /home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HSID/inp2_50.root
 //////////////////////////////////////////////////////////
 
 #ifndef ThreePiDecayApp_h
@@ -33,6 +33,7 @@ public :
    TLorentzVector  *TwoPiF;
    TLorentzVector  *TwoPiS;
    Float_t         t;
+   Int_t           gID;
   //data members for new branches
   //you must define how they are processed for each event
   //e.g.   TLorentzVector  *fp1;
@@ -49,9 +50,10 @@ public :
    TBranch        *b_TwoPiF;   //!
    TBranch        *b_TwoPiS;   //!
    TBranch        *b_ft;   //!
+   TBranch        *b_gID;   //!
 
    ThreePiDecayApp(TTree * /*tree*/ =0) : fChain(0) { }
-   virtual ~ThreePiDecayApp() { }
+   virtual ~ThreePiDecayApp() { SafeDelete(fTwoPiCM);SafeDelete(fOnePiCM);}
    virtual Int_t   Version() const { return 2; }
    virtual void    Begin(TTree *tree);
    virtual void    SlaveBegin(TTree *tree);
@@ -105,6 +107,7 @@ void ThreePiDecayApp::Init(TTree *tree)
    fChain->SetBranchAddress("TwoPiF", &TwoPiF, &b_TwoPiF);
    fChain->SetBranchAddress("TwoPiS", &TwoPiS, &b_TwoPiS);
    fChain->SetBranchAddress("t", &t, &b_ft);
+   fChain->SetBranchAddress("gID", &gID, &b_gID);
 }
 
 Bool_t ThreePiDecayApp::Notify()
@@ -129,7 +132,7 @@ Bool_t ThreePiDecayApp::Notify()
     fOutTree->Branch("OnePiCM",&fOnePiCM,buff,split);
   }
   else fChain->CopyAddresses(fOutTree);//reset the branch addresses of the cloned tree to the new file tree
-
+  
    return kTRUE;
 }
 

@@ -86,8 +86,7 @@ Bool_t ThreePiDecay::Process(Long64_t entry)
    // The return value is currently not used.
    GetEntry(entry); //lazy and slow, you can speed the code up by getting the branches you need to use instead
    //Ready to do some analysis here, before the Fill
-   
-   //Get boost vector to three pi rest frame
+    //Get boost vector to three pi rest frame
    TVector3 boost3pi=-ThreePi->BoostVector();
    //Set the initial two pi 4-vector with the fast pi+ 
    fTwoPiCM->SetVectM(TwoPiF->Vect(),TwoPiF->M());
@@ -96,10 +95,9 @@ Bool_t ThreePiDecay::Process(Long64_t entry)
    //Boost to Three pi rest frame
    fTwoPiCM->Boost(boost3pi);
    fOnePiCM->Boost(boost3pi);
-
+   
    THSOutput::HSProcessFill(); 
-
-
+  
    return kTRUE;
 }
 

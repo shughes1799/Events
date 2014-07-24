@@ -8,6 +8,8 @@
  IsAppendTree=kFALSE; //Append branches to the input tree
  IsNewTree=kFALSE;  //Output a brand new tree
  IsHSTree=kFALSE;   //Use THSOuput to THSParticle interface (probably not)
+ IsQval=kFALSE;   //Use Qvalue event weighting algorithm
+
  FileName="";   // The input filename containing the tree
  TreeName="";   // The name of the tree
  OutName="";   // The name of the output directory or file

@@ -54,10 +54,13 @@ class THSOutput : public THSHisto{
  
   TFile* fParentFile;//Parent file
   TTree* fParentTree;//Parent tree if you need to connect to parent branches
+  TList* fParEntryLists;
 
+  Bool_t fSaveID; //Ony save ID if this is the first THSOutput tree, subsequent trees will aready contain this branch
+  Int_t fgID; //global event ID number, should be set in first instance of THSOutput and preserved through further steps. Required to synchornise differnt trees as PROOF does not preserve event ordering
 
  public :
- THSOutput() : fFile(0), fProofFile(0), fOutTree(0),fCurTree(0), fEntryList(0),fSelInput(0),fSelOutput(0), fCodeList(0),fParentFile(0),fParentTree(0) {}   
+ THSOutput() : fFile(0), fProofFile(0), fOutTree(0),fCurTree(0), fEntryList(0),fSelInput(0),fSelOutput(0), fCodeList(0),fParentFile(0),fParentTree(0), fParEntryLists(0) {fSaveID=kFALSE;}   
   virtual ~THSOutput();
 
   virtual void InitOutput(); //Configure the output file and tree 
@@ -86,7 +89,8 @@ class THSOutput : public THSHisto{
   void HSTerminate();
 
   //Functions to connect (make friends) with parent selectors
-  virtual void InitParent(TTree* ctree,TString step);
-
+  void InitParent(TTree* ctree,TString step);
+  Long64_t GetParentEntry(Long64_t parentry);
+  void SortTree(TTree* tree);
 };
 #endif

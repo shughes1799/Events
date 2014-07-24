@@ -8,9 +8,9 @@
  IsAppendTree=kFALSE; //Append branches to the input tree
  IsNewTree=kFALSE;  //Output a brand new tree
  IsHSTree=kFALSE;   //Use THSOuput to THSParticle interface (probably not)
- FileName="/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HS/Decay/inp2_50.root";   // The input filename containing the tree
+ FileName="/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HSID/Decay/inp2_50.root";   // The input filename containing the tree
  TreeName="HSParticles";   // The name of the tree
- OutName="/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HS/Decay/Hists.root";   // The name of the output directory or file
+ OutName="/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HSID/Decay/Hists.root";   // The name of the output directory or file
  SelName="ThreePiParent";    // The name of the selector to be produced
 
  IsParent=kTRUE; //use connection with parent tree

@@ -19,6 +19,8 @@
 #include <TKey.h>
 #include <TString.h>
 #include <TFile.h>
+#include <TObjArray.h>
+#include <TEntryList.h>
 #include <iostream>
 #include <map>
 
@@ -30,13 +32,14 @@ typedef vector< StrTH1_Map > Vec_StrTH1; //make a type which is a vector of StrT
 class THSHisto {
  public :
   
- THSHisto(TTree * /*tree*/ =0) : fHisbins(0) { }
+ THSHisto(TTree * /*tree*/ =0) : fHisbins(0),fBinEntryLists(0) { }
   virtual ~THSHisto() {}
   
   ///Additional for histogramming
   //Here we can divide the data into 3 dimensions of kinematic bin
   //by using up to TH3
   TH1* fHisbins; //histogram defining the kinematics bins
+  void SetHisBins(TH1* hbins){fHisbins=hbins;};
   TString GetStrBin(Float_t ev1, Float_t ev2);
   Int_t GetKinBin(Float_t ev1,Float_t ev2=0,Float_t ev3=0);
   virtual void LoadCut(TString sCut);
@@ -44,6 +47,10 @@ class THSHisto {
   virtual void ChangeNames(/*TFile* list*/);
   virtual TH1* MapHist(TH1* hist);
   virtual TH1* FindHist(TString hname);
+
+  void EnterKinBinList(Int_t evBin,Long64_t entry){
+    ((TEntryList*)fBinEntryLists->At(evBin))->Enter(entry);
+  }
 
   //Users will need to declare and define the following functions
   virtual void HistogramList(TString ){};// =0; 
@@ -60,6 +67,8 @@ class THSHisto {
   vector< TString > fVecBinNames; // list of histogram bin names
   map< TString, Int_t > fMapCuts; // map of defined cuts to fVecHistCut element
   map< TString,TString > fBinMap; //bin (kinmematic) name to number map
+
+  TObjArray* fBinEntryLists; //arrray of entry lists for each kinematic bin
    
 };
 

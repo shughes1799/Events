@@ -53,6 +53,10 @@ void THSHisto::LoadHistograms(){
     fVecHistBin.push_back(fVecHistCut);//Add all the histograms for this kin bin
     fVecHistCut.clear(); //clear the previous bin histograms  
   }
+  //keep a list of events in each bin
+  fBinEntryLists=new TObjArray(Nbins);
+  fBinEntryLists->SetName("HSKinBinsList");
+  fBinEntryLists->SetOwner(kTRUE);
   //ifmultiple kinematic bins defined make a histogram for each bin
   TString sBin;
   for(Int_t ib=0;ib<Nbins;ib++){
@@ -66,10 +70,16 @@ void THSHisto::LoadHistograms(){
       HistogramList(fVecCuts[ncut++]+fVecBinNames[ib]); //construct all histograms for this bin,
       fVecHistCut.push_back(fHistNameMap); //enter the histograms for this cut into a vector element
       fHistNameMap.clear(); //clear the previous cut histograms
-    }
+
+     }
     fVecHistBin.push_back(fVecHistCut);//Add all the histograms for this kin bin
     fVecHistCut.clear(); //clear the previous bin histograms
+    //Add an entry list for each kinematic bin
+    TEntryList* el=new TEntryList(TString("HSBin_")+fVecBinNames[ib],TString("HSBin_")+fVecBinNames[ib]);
+    fBinEntryLists->Add(el);
+    if(dynamic_cast<TSelector*>(this)) dynamic_cast<TSelector*>(this)->GetOutputList()->Add(el);
   }
+  // if(dynamic_cast<TSelector*>(this)) dynamic_cast<TSelector*>(this)->GetOutputList()->Add(fBinEntryLists);
 }
 
 TH1* THSHisto::MapHist(TH1* hist){

@@ -3,6 +3,8 @@ Bool_t IsHisto=kFALSE;  //use THSHisto?
 Bool_t IsAppendTree=kFALSE; //Append branches to the input tree
 Bool_t IsNewTree=kFALSE;  //Output a brand new tree
 Bool_t IsHSTree=kFALSE;   //Use THSOuput to THSParticle interface (probably not)
+Bool_t IsQval=kFALSE;   //Use Qvale event weighting algorithm
+
 TString FileName;   // The input filename containing the tree
 TString TreeName;   // The name of the tree
 TString OutName;   // The name of the output directory or file
@@ -70,6 +72,62 @@ void ControlMacro(){
      lines->AddAt(new TObjString(TString("  gROOT->LoadMacro(\"")+ParSel+TString(".C++\");") ),place); 
      lines->AddAt(new TObjString(TString("  if(prf) prf->Load(\"")+ParSel+TString(".C+\");") ),place+1); 
 
+   }
+
+   if(IsQval){
+     //If you want to load save NN trees need to define its chain
+     TObject* obj=macro.GetLineWith("tree->Add(");
+     Int_t place=lines->IndexOf(obj); //get line number
+     place++;
+     lines->AddAt(new TObjString("   //Load a chain of the previously saved  NN trees for quick Qweigthing"),place++); 
+     lines->AddAt(new TObjString("   //The input files should match the files in tree"),place++); 
+     lines->AddAt(new TObjString("   //TChain* treeNN=new TChain(\"TreeOfNNTrees\",\"datachain\");"),place++); 
+     lines->AddAt(new TObjString("   //treeNN->Add(\"/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HSID/Qval/inp1*root\");"),place++); 
+
+
+    //need to add significant code to pass the Chain to the selector
+     //for cases of using PROOF or not
+     TObject* obj=macro.GetLineWith("tree->Process(");
+     place=lines->IndexOf(obj); //get line number
+     //remove process line
+     lines->Remove(obj);
+     //Add Control Qvalue stuff
+     lines->AddAt(new TObjString("//EventWeight needs full chain to find nearest neighbours, so this additional code is necessary!"),place++); 
+     lines->AddAt(new TObjString("   if(prf){//proof looks after its own input list"),place++); 
+     lines->AddAt(new TObjString("     prf->AddInput(new TNamed(\"NNChainName\",tree->GetName()));"),place++); 
+     lines->AddAt(new TObjString("     prf->AddInput(tree);"),place++); 
+     lines->AddAt(new TObjString("    //Give the chain of NN trees to the input list id using LoadNNTree"),place++); 
+     lines->AddAt(new TObjString("   // prf->AddInput(new TNamed(\"NNChainLoad\",treeNN->GetName()));"),place++); 
+     lines->AddAt(new TObjString("    //prf->AddInput(treeNN);"),place++);
+
+     lines->AddAt(new TObjString("    //Give the name of the file and histogram containing the kinematic bins"),place++); 
+     lines->AddAt(new TObjString("   // prf->AddInput(new TNamed(\"NNKinBins\",KINBINFILENAME));"),place++); 
+     lines->AddAt(new TObjString("   // prf->AddInput(new TNamed(\"NNKinBinsHis\",KINBINFILENAME));"),place++); 
+ 
+     lines->AddAt(new TObjString(TString("    tree->Process(\"")+SelName+".C++\");"),place++); 
+     lines->AddAt(new TObjString("   }"),place++); 
+     lines->AddAt(new TObjString("  else{ //we have to look after the input list"),place++); 
+     lines->AddAt(new TObjString(TString("    gROOT->LoadMacro(\"")+SelName+".C++\");"),place++); 
+     lines->AddAt(new TObjString(TString("    ")+SelName+"* nnsel=new "+SelName+"();"),place++); 
+     lines->AddAt(new TObjString("     TList* inList=new TList();"),place++); 
+     lines->AddAt(new TObjString("     inList->SetOwner();//let the list delete the objects you give it"),place++); 
+     lines->AddAt(new TObjString("     inList->Add(new TNamed(\"NNChainName\",tree->GetName()));"),place++); 
+     lines->AddAt(new TObjString("     inList->Add(tree->Clone());"),place++); 
+     lines->AddAt(new TObjString("    //Give the chain of NN trees to the input list"),place++); 
+    lines->AddAt(new TObjString("    //inList->Add(new TNamed(\"NNChainLoad\",treeNN->GetName()));"),place++); 
+    lines->AddAt(new TObjString("    //inList->Add(treeNN);"),place++); 
+
+     lines->AddAt(new TObjString("    //Give the name of the file and histogram containing the kinematic bins"),place++); 
+     lines->AddAt(new TObjString("   // inList->Add(new TNamed(\"NNKinBins\",KINBINFILENAME));"),place++); 
+     lines->AddAt(new TObjString("   // inList->Add(new TNamed(\"NNKinBinsHis\",KINBINFILENAME));"),place++); 
+ 
+       lines->AddAt(new TObjString("     nnsel->SetInputList(inList);"),place++); 
+     lines->AddAt(new TObjString("     Long64_t first=0;"),place++); 
+     lines->AddAt(new TObjString("     tree->LoadTree(first); //This is done in TChain::Process(filename) but not Process(selector)!! "),place++); 
+     lines->AddAt(new TObjString("     tree->Process(nnsel,\"\");"),place++); 
+     lines->AddAt(new TObjString("     delete inList;"),place++); 
+     lines->AddAt(new TObjString("   }"),place++); 
+ 
    }
    macro.SaveSource(TString("Control_")+SelName+".C");
 }
@@ -191,6 +249,86 @@ void HSit_C(){
    
    
   }
+  if(IsQval){
+    //SlaveBegin
+    obj=macro.GetLineWith( "THSOutput::HSSlaveBegin(fInput,fOutput);");
+    Int_t place=lines->IndexOf(obj); //get line number
+    lines->AddAt(new TObjString("// Event Weighting initialisation"),place+1); 
+    lines->AddAt(new TObjString("   fNcoord=1;//Need to set the correct number of varibles in distance calc."),place+2); 
+    lines->AddAt(new TObjString("   fNdisc=1;//Need to set the correct number of varibles signal/back fit"),place+3); 
+    lines->AddAt(new TObjString("   fIsPlot=kTRUE;    //Show the fit to the nearest neigbours"),place+4); 
+    lines->AddAt(new TObjString("   fIsSaveNN=kFALSE; //Save all the nearest nieghbours tree"),place+5); 
+    lines->AddAt(new TObjString("   fIsLoadNN=kFALSE; //Load previously save nearest neigbours trees"),place+6); 
+    lines->AddAt(new TObjString("   InitNN(fInput);"),place+7); 
+    lines->AddAt(new TObjString("   if(fIsSaveNN) fOutput->Add(fTofT);"),place+8); 
+    lines->AddAt(new TObjString("   SetupRooFit();"),place+9); 
+     lines->AddAt(new TObjString("// End Event Weighting initialisation"),place+10); 
+     if(IsNewTree){//if creating new file for EventWeight branches
+      obj=macro.GetLineWith( "//e.g.  fOutTree->Branch(\"p1\",&fp1,buff,split);");
+      place=lines->IndexOf(obj); //get line number
+      lines->AddAt(new TObjString("    //EventWeighter make new output tree"),place+1); 
+      lines->AddAt(new TObjString("    fOutTree->Branch(\"Qval\",&fQval,\"Qval/F\");"),place+2); 
+      lines->AddAt(new TObjString("    fOutTree->Branch(\"SigWidth\",&fSigWidth,\"SigWidth/F\");"),place+3); 
+      lines->AddAt(new TObjString("    fOutTree->Branch(\"SigMean\",&fSigMean,\"SigMean/F\");"),place+4); 
+      lines->AddAt(new TObjString("    fOutTree->Branch(\"SB\",&fSB,\"SB/F\");"),place+5); 
+    }
+     //Process  
+     TString smarker="GetEntry(entry); //lazy and slow, you can speed the code up by getting the branches you need to use instead";
+     TString sline=macro.GetLineWith(smarker)->GetString();
+     sline.ReplaceAll(smarker,"GetNNBranches(entry);//just get branches needed for weighting");
+     macro.GetLineWith(smarker)->SetString(sline);
+
+
+    obj=macro.GetLineWith( "//Ready to do some analysis here, before the Fill");
+    place=lines->IndexOf(obj); //get line number
+    lines->AddAt(new TObjString("   //If using kinematic bins find the correct Entry list"),place+1); 
+    lines->AddAt(new TObjString("   SetEventEntryList(beam->P4().fE,t); //correspond to varibles in the NNKinBinsHis histogram "),place+2); 
+    lines->AddAt(new TObjString("   MakeNNMap(); //EventWeighter make map of nearest neighbours for this event"),place+3); 
+    lines->AddAt(new TObjString("    FillNNEvTree(entry); //EventWeighter fill tree for fitting"),place+4); 
+    lines->AddAt(new TObjString("    FillDiscVar(entry);//get the discriminatory variable value for thsi event"),place+5); 
+
+    lines->AddAt(new TObjString("    RunRooFit();  //EventWeighter do the fit"),place+6); 
+    //SlaveTerminate
+    obj=macro.GetLineWith( "THSOutput::HSSlaveTerminate();");
+    place=lines->IndexOf(obj); //get line number
+    lines->AddAt(new TObjString("    if(fIsSaveNN) SaveNNTree(fFile,fOutName);//EventWeighter save nearest neighbour trees"),place); 
+    
+    //virtual functions that must be define by user, added at end of file
+    lines->Add(new TObjString(TString("void ")+SelName+"::GetNNBranches(Long64_t nni){"));
+    lines->Add(new TObjString(" //EventWeighter function to get the branches needed for the nearest neighbour search and fit"));
+    lines->Add(new TObjString(" //e.g. b_beam->GetEntry(nni);"));
+    lines->Add(new TObjString("}"));
+
+    lines->Add(new TObjString(TString("void ")+SelName+"::FillCoord(TVectorD &coordV){//define the variables used in the distance calculation"));
+    lines->Add(new TObjString(" //There should be fNcoord entries"));
+    lines->Add(new TObjString(" //e.g. coordV[0]=beam->P4().E();"));
+    lines->Add(new TObjString(" //e.g. coordV[1]=t;"));
+    lines->Add(new TObjString("}"));
+
+    lines->Add(new TObjString(TString("void ")+SelName+"::FillDiscVar(Long64_t nni){//define the variables used in the distance calculationsignal/background fit"));
+    lines->Add(new TObjString(" //There should be fNdisc entries"));
+    lines->Add(new TObjString(" //e.g. b_miss->GetEntry(nni);"));
+    lines->Add(new TObjString(" //e.g. fDiscVar[0]=(miss->M());//missing mass"));
+    lines->Add(new TObjString("}"));
+
+    lines->Add(new TObjString(TString("void ")+SelName+"::CreateNNTree(){// create the tree fNNEvTree used in the RooFit"));
+    lines->Add(new TObjString(" //e.g. fNNEvTree=new TTree(\"NN tree\",\"tree with NN fit variables\");"));
+    lines->Add(new TObjString(" //e.g. fNNEvTree->Branch(\"MM\",&fMM,\"MM/F\");"));
+    lines->Add(new TObjString("}"));
+
+    lines->Add(new TObjString(TString("void ")+SelName+"::FillNNEvBranches(Long64_t id){//define how the branches in the NN tree match the discriminatory variables vector"));
+    lines->Add(new TObjString(" //e.g.  fMM=fVdisVar[id][0];//as fDiscVar[0]=(miss->M());"));
+    lines->Add(new TObjString("}"));
+
+    lines->Add(new TObjString(TString("void ")+SelName+"::SetMetric(){//define the metric use to scale the variables in the distance calculation"));
+    lines->Add(new TObjString(" //There should be fNcoord rows and columns"));
+    lines->Add(new TObjString(" //e.g. fIsDiagonal=kTRUE;"));
+    lines->Add(new TObjString(" //e.g. Dmetric[0][0]=1;"));
+    lines->Add(new TObjString(" //e.g. Dmetric[1][1]=(1./2.)*(1./2.);"));
+    lines->Add(new TObjString(" THSEventWeighter::SetMetric();"));
+    lines->Add(new TObjString("}"));
+    lines->Add(new TObjString(""));
+  }
   macro.SaveSource(SelName+".C");
   
 }
@@ -280,6 +418,55 @@ void HSit_h(){
 
 
  }
+ if(IsQval){
+   //headre file
+   obj=macro.GetLineWith( "#include <TSelector.h>");
+   Int_t place=lines->IndexOf(obj); //get line number
+   lines->AddAt(new TObjString("#include \"THSEventWeighter.h\""),place+1); 
+   //class inheritance
+   TString smarker="public TSelector";
+   TString sline=macro.GetLineWith(smarker)->GetString();
+   sline.ReplaceAll(smarker,"public TSelector, public THSEventWeighter ");
+   macro.GetLineWith(smarker)->SetString(sline);
+   //Notify
+   obj=macro.GetLineWith( "::Notify()");
+   place=lines->IndexOf(obj); //get line number
+   lines->AddAt(new TObjString("    if(fIsSaveNN) SaveNNTree(fFile,fOutName);//EventWeighter save nearest neighbour trees"),place+2); 
+   lines->AddAt(new TObjString("  if(fIsLoadNN) NotifyNNTree(fChain);//EventWeighter load nearest neighbour trees, get the entry offset for this tree fChain"),place+3); 
+
+   obj=macro.GetLineWith( "THSOutput::HSNotify(fChain)");
+   place=lines->IndexOf(obj); //get line number
+   lines->AddAt(new TObjString("  //if it exists give the tree to the file"),place+1); 
+   lines->AddAt(new TObjString("  if(fIsSaveNN){"),place+2); 
+   lines->AddAt(new TObjString("     fTofT->SetDirectory(fFile);"),place+3); 
+   lines->AddAt(new TObjString("     fTofT->AutoSave();"),place+4); 
+   lines->AddAt(new TObjString("  }"),place+5); 
+
+   if(IsAppendTree){//Automiatically add Qval, SigmaMean etc to appened tree
+     obj=macro.GetLineWith( "//e.g. fOutTree->Branch(\"p1\",&fp1,buff,split);");
+     place=lines->IndexOf(obj); //get line number
+     lines->AddAt(new TObjString("    //EventWeighter append branches"),place+1); 
+     lines->AddAt(new TObjString("    fOutTree->Branch(\"Qval\",&fQval,\"Qval/F\");"),place+2); 
+     lines->AddAt(new TObjString("    fOutTree->Branch(\"SigWidth\",&fSigWidth,\"SigWidth/F\");"),place+3); 
+     lines->AddAt(new TObjString("    fOutTree->Branch(\"SigMean\",&fSigMean,\"SigMean/F\");"),place+4); 
+     lines->AddAt(new TObjString("    fOutTree->Branch(\"SB\",&fSB,\"SB/F\");"),place+5); 
+     
+     
+   }
+   //decalre functions users must define
+   obj=macro.GetLineWith( "virtual void    Terminate();");
+   place=lines->IndexOf(obj); //get line number
+   lines->AddAt(new TObjString("   //Event Weighter functions to be defined by user"),place+1);
+   lines->AddAt(new TObjString("   virtual void FillCoord(TVectorD &coordV); //Define how coordinates are to be filled"),place+2);
+   lines->AddAt(new TObjString("   virtual void FillDiscVar(Long64_t nni); //define discriminatory variables"),place+3);
+   lines->AddAt(new TObjString("   virtual void CreateNNTree();// create the tree fNNEvTree used in the RooFit"),place+4);
+   lines->AddAt(new TObjString("   virtual void FillNNEvBranches(Long64_t id); //define how to fill the NN tree branches"),place+5);
+   lines->AddAt(new TObjString("   virtual void GetNNBranches(Long64_t nni); //get the branches needed to fill coordinates and discriminatry variables"),place+6);
+   lines->AddAt(new TObjString("   virtual void SetMetric();  //Define the metric used to normalise distance variables;"),place+7);
+
+}
+
+
   macro.SaveSource(SelName+".h");
 }
 void ConnectParent(){
@@ -319,7 +506,7 @@ void ConnectParent(){
   lines->AddAfter(obj,new TObjString(sinc)); //add the parent selector include
 
   //Now lines to initialise the parent selector 
-  obj=macroH.GetLineWith("fChain->SetMakeClass(1);"); 
+  obj=macroH.GetLineWith("THSOutput::HSNotify(fChain);"); 
   sinc="//initialise parent selector";
   Int_t place=lines->IndexOf(obj); //get line number
   sinc=TString("   THSOutput::InitParent(fChain,\"") + sStep+"\");";
@@ -339,7 +526,7 @@ lines->AddAt(new TObjString("//then use the object like fParent.beam->P4().E();"
 
   obj=macroC.GetLineWith("GetEntry(entry);");
   place=lines->IndexOf(obj); //get line number
-  lines->AddAt(new TObjString("fParent.GetEntry(entry); //lazy and slow, optimise your own analysis by only getting the branches you need"),place+1);
+  lines->AddAt(new TObjString("   fParent.GetEntry(GetParentEntry(entry)); //lazy and slow, optimise your own analysis by only getting the branches you need"),place+1);
 
   macroC.SaveSource(TString(macroC.GetName())+".C");
 
