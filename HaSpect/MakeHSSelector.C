@@ -196,6 +196,7 @@ void HSit_C(){
     obj=macro.GetLineWith("   THSOutput::HSProcessFill();"); 
     place=lines->IndexOf(obj); //get line number
     lines->AddAt(new TObjString("   //Int_t kinBin=GetKinBin();//if fHisbins is defined need to give this meaningful arguments"),place);
+    lines->AddAt(new TObjString("   //EnterKinBinList(kinBin,entry);//save evente in kinematic bins entry lists"),place+1);
     lines->AddAt(new TObjString("   //FillHistograms(\"Cut1\",kinBin);"),place+1);
     lines->AddAt(new TObjString("   FillHistograms(\"Cut1\",0);"),place+2);
 
@@ -282,12 +283,12 @@ void HSit_C(){
     obj=macro.GetLineWith( "//Ready to do some analysis here, before the Fill");
     place=lines->IndexOf(obj); //get line number
     lines->AddAt(new TObjString("   //If using kinematic bins find the correct Entry list"),place+1); 
-    lines->AddAt(new TObjString("   SetEventEntryList(beam->P4().fE,t); //correspond to varibles in the NNKinBinsHis histogram "),place+2); 
+    lines->AddAt(new TObjString("   //SetEventEntryList(); //correspond to varibles in the NNKinBinsHis histogram "),place+2); 
     lines->AddAt(new TObjString("   MakeNNMap(); //EventWeighter make map of nearest neighbours for this event"),place+3); 
-    lines->AddAt(new TObjString("    FillNNEvTree(entry); //EventWeighter fill tree for fitting"),place+4); 
-    lines->AddAt(new TObjString("    FillDiscVar(entry);//get the discriminatory variable value for thsi event"),place+5); 
+    lines->AddAt(new TObjString("   FillNNEvTree(entry); //EventWeighter fill tree for fitting"),place+4); 
+    lines->AddAt(new TObjString("   FillDiscVar(entry);//get the discriminatory variable value for thsi event"),place+5); 
 
-    lines->AddAt(new TObjString("    RunRooFit();  //EventWeighter do the fit"),place+6); 
+    lines->AddAt(new TObjString("   RunRooFit();  //EventWeighter do the fit"),place+6); 
     //SlaveTerminate
     obj=macro.GetLineWith( "THSOutput::HSSlaveTerminate();");
     place=lines->IndexOf(obj); //get line number

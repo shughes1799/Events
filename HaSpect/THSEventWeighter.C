@@ -377,7 +377,6 @@ void  THSEventWeighter::RunRooFit(){
   //fRooFit->var("c3")->setVal(0.0);
   RooFitResult* rf_res = RFmodel->fitTo(nn_data,Extended());
 
-
   //To get the Q value must get values of PDFs at mass=mm
   RFvx->setVal(fDiscVar[0]);
   //fRooFit->var("MM")->setVal(miss->M());

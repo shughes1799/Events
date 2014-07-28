@@ -5,7 +5,7 @@
   
    //Set the ouput directory or file (if full file name is given just 1 file is created, while if a directory it will be created and filled with files of the same name as the input 
    gSystem->Setenv("HSOUT",
-		   "/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HSID/");
+		   "/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HSID2/");
    
    //Configure the analysis (i.e PROOF, source compilation...)
    TString HSANA=gSystem->Getenv("HSANA");
