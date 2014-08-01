@@ -29,7 +29,7 @@
 #include <iostream>
 #include <algorithm>
 #include "THSOutput.h"
-#include "THSHisto.h"
+//#include "THSHisto.h"
 
 using namespace std;
 
@@ -82,7 +82,9 @@ void THSOutput::HSNotify(TTree* tree){
   //deal with entry lists
   // fEntryList->SetTree(fCurTree);
   // cout<<fEntryList<<" "<<fCurTree->GetEntryList()<<" "<<fCurTree->GetDirectory()<<endl;
-  if(fOutName.EndsWith(".root")){
+  //Check if gID exists in current tree, if not will start saving it now
+  if(!tree->GetBranch("fgID")) fSaveID=kTRUE;
+   if(fOutName.EndsWith(".root")){
     //Only want to do some things once when writing 1 file only
     if(fStepName.Length()==0){
       InitOutFile(fCurTree); //initialise output file
@@ -91,9 +93,7 @@ void THSOutput::HSNotify(TTree* tree){
     }
     else return; //only saving one combined file
   }
-  //Check if gID exists in current tree, if not will start saving it now
-  if(!tree->GetBranch("fgID")) fSaveID=kTRUE;
-  //Case only making one output file
+ //Case only making one output file
   FinishOutput(); //close the last file
   InitOutFile(fCurTree);   //start the new file
   return;
