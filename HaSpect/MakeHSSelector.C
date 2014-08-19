@@ -17,7 +17,7 @@ Int_t StepN;        // If connecting with parent, which step number is its selec
 TString ParSel;    // The name of the parent selector
 
 
-void MakeHSSelector(){
+void MakeHSSelector(Bool_t IsOverwrite=kFALSE){
 
   //Get the tree
   File=new TFile(FileName);
@@ -26,6 +26,8 @@ void MakeHSSelector(){
   Tree=(TTree*)File->Get(TreeName);
   if(!Tree){cout<<"No tree "<<TreeName<<" found in "<<FileName<<endl;return;}
 
+  //check if skelton code exists already
+  if(!IsOverwrite&&gSystem->FindFile("./",SelName+".C")){cout<<"Selector Code already exists  to overwrite type MakeHSSelector(kTRUE) in your ConfigSel.C file"<<endl;return;};
   //First make the selector in the standard way
   Tree->MakeSelector(SelName);
 
