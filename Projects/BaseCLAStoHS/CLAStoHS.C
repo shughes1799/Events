@@ -30,7 +30,13 @@
 using namespace std;
 
 TLorentzVector gTarget(0,0,0,9.38271999999999995e-01);
-
+/*
+Note, I can choose to either ignore or count ghost tracks when considering events in the final state
+By default it ignores them by calling the function IsGoodEventGhosts();
+To count them you should comment this out and use IsGoodEvent() instead in Process()
+//if(!IsGoodEvent()) return kTRUE; //not the event we want so exit
+if(!IsGoodEventGhosts()) return kTRUE; //not the event we want so exit
+*/
 CLAStoHS::~CLAStoHS(){
 
   SafeDelete(fHSgamma);
@@ -67,7 +73,8 @@ Bool_t CLAStoHS::Process(Long64_t entry)
   THSOutput::HSProcessStart(entry);
   
   //Check if this event has the correct final state, see fFinalState
-   if(!IsGoodEvent()) return kTRUE; //not the event we want so exit
+  /// if(!IsGoodEvent()) return kTRUE; //not the event we want so exit
+   if(!IsGoodEventGhosts()) return kTRUE; //not the event we want so exit
    //check for a good photon
    GetEventPartBranches(entry); //get just the branches required
    //look for photons in 1.5ns window, note 2ns looks a bit too large a window
@@ -127,16 +134,45 @@ Bool_t CLAStoHS::IsGoodEvent(){
   if(!(std::equal(EventState.begin(),EventState.end(),fFinalState.begin()))) return kFALSE; // return if IDs are not those requested
   else return kTRUE; //it is a good event
 }
+Bool_t CLAStoHS::IsGoodEventGhosts(){
+  //this algorithm uses std::vec to compare the particle ids of the event
+  //and those defined in fFinalState, event is good if they match
+
+  //only get branches used
+  b_gpart->GetEntry(fEntry);
+  //  if(gpart!=(Int_t)fNdet) return kFALSE;//only analyse event with correct final state
+  //Check the tracking status is OK for all tracks (Must need to apply an efficiency correction for this perhaps MC already does)
+  b_stat->GetEntry(fEntry);
+  // for(UInt_t istat=0;istat<fNdet;istat++) if(stat[istat]<1) return kFALSE;
+
+  b_id->GetEntry(fEntry); //particle id branch
+  //store the particle IDs in vector to compare with fFinalState
+  vector<Int_t>EventState;
+  Int_t nreal=0;
+  for(UInt_t ifs=0;ifs<gpart;ifs++) {
+    if(stat[ifs]>0) {EventState.push_back(id[ifs]);nreal++;}
+  }
+  if(nreal!=(Int_t)fNdet) return kFALSE;//only analyse event with correct final state
+    //put in order for comparison with requested fFinalState
+  std::sort(EventState.begin(),EventState.begin()+nreal);
+  //now compare with the particles defined in fFinalState 
+  if(!(std::equal(EventState.begin(),EventState.end(),fFinalState.begin()))) return kFALSE; // return if IDs are not those requested
+  else return kTRUE; //it is a good event
+}
 
 void CLAStoHS::MakeDetected(){
  //this function controls the interfaciing of the reconstructed data to THSParticles
-  Int_t iID[fNdet]; //array containing order of particle IDs in id array 
-  TMath::Sort((Int_t)fNdet,id,iID,kFALSE); //order the array in asscending order(kFALSE), e.g. -211,211,211
+  Int_t iIDall[gpart]; //array containing order of particle IDs in id array for all tracks (incl ghosts) 
+  Int_t iID[fNdet]; //array containing order of particle IDs in id array for "real" tracks
+  TMath::Sort((Int_t)gpart,id,iIDall,kFALSE); //order the array in asscending order(kFALSE), e.g. -211,211,211
+  //write only the indexes of the real tracks to the ID array
+  UInt_t Ndet=0;
+  for(Int_t ireal=0;ireal<gpart;ireal++) if(stat[ireal]>0)iID[Ndet++]=iIDall[ireal];
   //the ordering in iID[] should now match fFinalState and fEventSate
   //loop over different particle types
-  UInt_t Ndet=0;
+  Ndet=0;
   for(UInt_t itype=0;itype<fNtype.size();itype++){ 
-     if(fNtype[itype]==1)MakeParticle(fDetParticle[Ndet],iID[Ndet]); 
+      if(fNtype[itype]==1)MakeParticle(fDetParticle[Ndet],iID[Ndet]); 
      else{//order particles of same type fastest first
       //get an array with the momentum of particles of this type
       Double_t typemom[fNtype[itype]];
@@ -154,7 +190,8 @@ void CLAStoHS::MakeParticle(THSParticle* hsp,Int_t ip){
   //set the intitial Lorentz Vector
   hsp->SetXYZM(p[ip]*cx[ip],p[ip]*cy[ip],p[ip]*cz[ip],hsp->PDGMass());
   //set the measured mass
-  hsp->SetMeasMass(m[ip]);
+  hsp->SetMeasMass(sqrt(m[ip]));
+  //hsp->SetMeasMass((m[ip]));
   //calculate the vertex time
   hsp->SetTime(sc_t[sc[ip]-1]-sc_r[sc[ip]-1]/hsp->P4().Beta()/29.9792458-tr_time);
 

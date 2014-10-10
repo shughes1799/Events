@@ -29,7 +29,7 @@
 #include <iostream>
 #include <algorithm>
 #include "THSOutput.h"
-#include "THSHisto.h"
+//#include "THSHisto.h"
 
 using namespace std;
 
@@ -82,18 +82,18 @@ void THSOutput::HSNotify(TTree* tree){
   //deal with entry lists
   // fEntryList->SetTree(fCurTree);
   // cout<<fEntryList<<" "<<fCurTree->GetEntryList()<<" "<<fCurTree->GetDirectory()<<endl;
-  if(fOutName.EndsWith(".root")){
-    //Only want to do some things once when writing 1 file only
-    if(fStepName.Length()==0){
-      InitOutFile(fCurTree); //initialise output file
-      CopyCode(fFile,fCurTree->GetCurrentFile()); //copy surce code from input tree to output
-      return;
-    }
-    else return; //only saving one combined file
-  }
   //Check if gID exists in current tree, if not will start saving it now
   if(!tree->GetBranch("fgID")) fSaveID=kTRUE;
-  //Case only making one output file
+   if(fOutName.EndsWith(".root")){
+    //Only want to do some things once when writing 1 file only
+     if(fStepName.Length()==0){
+       InitOutFile(fCurTree); //initialise output file
+    //   CopyCode(fFile,fCurTree->GetCurrentFile()); //copy surce code from input tree to output
+       return;
+     }
+    else return; //only saving one combined file
+   }
+ //Case only making one output file
   FinishOutput(); //close the last file
   InitOutFile(fCurTree);   //start the new file
   return;
@@ -115,35 +115,47 @@ void THSOutput::HSTerminate(){
   //This function is a bit messy, mainly due to allowing different configurations
   //of analysis to use the same code, e.g. proof or not, many files or one
   if(fOutName.EndsWith(".root")){//Just one file
-    //Change histogram names (if there are any)
     //Copy the source code  and event list once
-    //to stop PROOF merge making multiple copies of source code. 
-    TIter next(fSelOutput);
-    TKey* key=0;
-    //Look for a directory in the input root file which includes HSStep
-    //it will be copied to the new output root file
-    TList* srcList=0;
-    //iterate over the output list for the source code list
-    while ((key = (TKey*)next()))if(TString(key->GetName()).Contains("HSStep")){//find the HSStep list
-	srcList=(TList*)fSelOutput->FindObject(fStepName=key->GetName());
-	break;
-      }
-    TDirectory* savedir=gDirectory;
-    TFile* file=TFile::Open(fOutName,"update"); //reopen output file
-    if(srcList&&file){
-      WriteListtoFile(srcList); //write source list to directory in file
-      file->cd(fStepName); //move into new directory
-      fEntryList->Write(0,TObject::kOverwrite); //save event list in here too
+    // //to stop PROOF merge making multiple copies of source code. 
+    TEntryList* elist=dynamic_cast<TEntryList*>(fSelOutput->FindObject("HSelist")); 	//must use the eventlist merged in output list
+    TEntryList* eltemp=0;
+    TString InDirName;
+    TString InFileName;
+    if(elist->GetLists()){
+      //just going to save code from first file in list
+      InDirName=gSystem->DirName(((TEntryList*)elist->GetLists()->At(0))->GetFileName(	));//assume all files in same directory as first
+      InFileName=((TEntryList*)elist->GetLists()->At(0))->GetFileName();
+      // eltemp=elist->GetEntryList(elist->GetTreeName(),InFileName);
+    }	
+    else{//only one file in input chain
+      // eltemp=elist; 
+      InFileName=elist->GetFileName();
     }
-    //If kinematic bins to be saved save them
+    TDirectory* savedir=gDirectory;
+    TFile* elfile=TFile::Open(fOutName,"update"); //reopen output file
+    
+    //Copy original input code to output file
+    TFile* infile=new TFile(InFileName);
+    CopyCode(elfile,infile);
+    infile->Close();
+    delete infile;
+    cout<<"Written code to "<<fStepName<<endl;
+    //Write the entrylist to the step directory
+    //eltemp->SetName(elist->GetName());
+    elfile->cd(fStepName); //Write in directory with source code
+    elist->Write(0,TObject::kOverwrite);
+    // elfile->Close();
+     //If kinematic bins to be saved save them
     //note this is currently only implemented for one .root ouput file
     //the entry lists themselves know which tree from the chain to use
     //Note again the entry list must be saved after the PROOF merge
     //This makes sure all treenames etc. are correct
-     if(file) file->cd();
+     if(elfile) elfile->cd();
      TDirectory *curDir = gDirectory->mkdir("HSKinBinEntries");
     curDir->cd();
-    next.Begin();
+    TIter next(fSelOutput);
+    TKey* key=0;
+    // next.Begin();
     Long64_t Nkbevs=0;
     while ((key = (TKey*)next()))if(TString(key->GetName()).Contains("HSBin")){//find the HSBin  list
 	fSelOutput->FindObject(fStepName=key->GetName())->Write();
@@ -151,10 +163,10 @@ void THSOutput::HSTerminate(){
       }
     cout<<"Saved "<< Nkbevs<<" to kin bin entry lists"<<endl;
     //saved kinematic bin entries
-    if(file) {
-      file->Close();
+    if(elfile) {
+      elfile->Close();
       savedir->cd();
-      delete file;	
+      delete elfile;	
     }
   }
   else{
@@ -165,11 +177,6 @@ void THSOutput::HSTerminate(){
     TObject* outo=0;
     TEntryList* elist=dynamic_cast<TEntryList*>(fSelOutput->FindObject("HSelist")); //must use the eventlist merged in output list
  
-    //Save the overall event list in a new file in output directory
-    TFile* allel=new TFile(fOutName+"/ParentEventList.root","recreate");
-    elist->Write();
-    allel->Close();
-    delete allel;
     //now iterate over output file and write a copy of their event list
     //the event list for each tree is retireved from el
     while((outo=dynamic_cast<TObject*>(next()))){
@@ -187,28 +194,40 @@ void THSOutput::HSTerminate(){
 	  }
 	}//done reordering if proof
 	//now look for source code directory 
-	TIter nextf(elfile->GetListOfKeys());
-	TKey* key=0;
-	//Look for a directory in the input root file which includes HSStep
-	while ((key = (TKey*)nextf()))if(TString(key->GetName()).Contains("HSStep"))fStepName=key->GetName();
 	//now just get the sub event list corresponding to this file
 	//note proof file contains just the base name without directory
 	//we need the directory and name of the input trees
 	TEntryList* eltemp=0;
 	TString InDirName;
+	TString InFileName;
 	if(elist->GetLists()){
+
 	  InDirName=gSystem->DirName(((TEntryList*)elist->GetLists()->At(0))->GetFileName());//assume all files in same directory as first
-	  eltemp=elist->GetEntryList(elist->GetTreeName(),InDirName+"/"+elpofile->GetName());
-	}
+	  InFileName=InDirName+"/"+elpofile->GetName();
+	  eltemp=elist->GetEntryList(elist->GetTreeName(),InFileName);
+	}	
 	else{//only one file in input chain
 	  eltemp=elist; 
+	  InFileName=elist->GetFileName();
 	}
+	//Copy original input code to output file
+	TFile* infile=new TFile(InFileName);
+	CopyCode(elfile,infile);
+	infile->Close();
+	delete infile;
+	cout<<"Written code to "<<fStepName<<endl;
+	//Write the entrylist to the step directory
 	eltemp->SetName(elist->GetName());
 	elfile->cd(fStepName); //Write in directory with source code
 	eltemp->Write(0,TObject::kOverwrite);
 	elfile->Close();
       }
     }
+    //Save the overall event list in a new file in output directory
+    TFile* allel=new TFile(fOutName+"/ParentEventList.root","recreate");
+    elist->Write();
+    allel->Close();
+    delete allel;
   }
 }
 void THSOutput::InitOutput(){
@@ -216,7 +235,7 @@ void THSOutput::InitOutput(){
  //Make output Tree   
    if(!fOutTree) fOutTree=new TTree("HSParticles","A tree containing reconstructed particles");
 
-  Int_t buff=32000;
+  Int_t buff=64000;
   Int_t split=0;//note split is important in the TSelector framework, if increased branches in subsequent selectors will be data members of the THSParticle object rather than the whole object (this can lead to name conflicts)
    
    //now automatically create requested detected particles
@@ -399,6 +418,7 @@ void THSOutput::InitOutFile(TTree* chain){
     ofname.Prepend(fOutName+"/");
   }
   cout<<"InitOut "<<ofname<<endl;
+  TDirectory* savedir=gDirectory;
   Info("Notify", "processing file: %s", ofname.Data());
    if(fFile)	SafeDelete(fFile);
    //  if(fProofFile)	SafeDelete(fProofFile);
@@ -427,7 +447,8 @@ void THSOutput::InitOutFile(TTree* chain){
    //here we are only going to write unpack macro if writing multiple files
    //PROOF cannot merge macros, so will just write it in terminate
    //in case of writing to single file
-   if(!fOutName.EndsWith(".root")) CopyCode(fFile,chain->GetCurrentFile());
+   //  if(!fOutName.EndsWith(".root")) CopyCode(fFile,chain->GetCurrentFile());
+   gDirectory = savedir;
 
 }
 void THSOutput::CopyCode(TDirectory* curDir,TDirectory* prevDir){
@@ -468,23 +489,11 @@ void THSOutput::CopyCode(TDirectory* curDir,TDirectory* prevDir){
   //If there was a previous step copy its source to the new step list
   if(prevStep) stepDir->Add(CopyDirtoList(prevStep));
 
-  if(!fOutName.EndsWith(".root")){
-    //note this allows writing of multiple copies when merging files
-    //should correct to write stepDir to Output and loop over files
-    //in slave terminate writing as for terminate in the one file case
-    curDir->cd();
-    WriteListtoFile(stepDir);
-    savedir->cd();
-  }
-  //or only saving 1 file, so addd it to output for saving in HSTerminate
-  else {
-    if(prevStep){
-      TList* templ=(TList*)stepDir->FindObject(prevStep->GetName()); //get rid of previous event list, in this case it is only one files worth. Need to get the full eventlist from the parent directory if we want to use it....
-      if(templ)templ->Remove(templ->FindObject("HSelist"));
-    }
-    fSelOutput->Add((TList*)stepDir->Clone());
-  } 
-  savedir->cd(); //just in case
+  //Write the source code to the output file curDir
+  curDir->cd();
+  WriteListtoFile(stepDir);
+  savedir->cd();
+
 }
 void THSOutput::ImportSysDirtoList(const char *dirname,TList* list) {
   //based on $ROOTSYS/tutorials/io/importCode.C       

@@ -92,5 +92,8 @@ class THSOutput : public THSHisto{
   void InitParent(TTree* ctree,TString step);
   Long64_t GetParentEntry(Long64_t parentry);
   void SortTree(TTree* tree);
+
+  //Setter functions may be needed if using without TSelector
+  void SetParticles(TString sp){fStrParticles=sp;}
 };
 #endif

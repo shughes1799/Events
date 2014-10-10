@@ -31,6 +31,7 @@ class CLAStoHS : public TSelector, public  THSOutput {
   void GetEventPartBranches(Int_t evi);         //get the required branches
   void MakeParticle(THSParticle* hsp,Int_t ip); //convert to THSParticle using index ip e.g. cx[ip] etc.
   Bool_t IsGoodEvent();                         // initial test of event
+  Bool_t IsGoodEventGhosts();                   // initial test of event allowing ghost tracks
   void MakeDetected();                          // convert the input data to THSParticles
   Bool_t MakeBeam(Float_t Tmid,Float_t Tcut);   // convert the beam branches into a THSParticle
 

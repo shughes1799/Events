@@ -98,7 +98,7 @@ void THSEventWeighter::InitNN(TList* input){
   
   //reserve the NN  vectors space
   fNNVdisVar.reserve(fNmax);
-  fVcoord.reserve(fNmax);
+  //fVcoord.reserve(fNmax);
   if(fIsLoadNN) fVdisVar.reserve(fNmax);//Know size when loading saved event
   //cache the useful variables, much quicker than reading tree each event
   TEntryList* el=0;
@@ -117,20 +117,14 @@ void THSEventWeighter::InitNN(TList* input){
       chainEntry = treeEntry+fNNChain->GetTreeOffset()[treenum]; 
       fNNChain->LoadTree(chainEntry);
     }//if not just use loop index over all events
-    else treeEntry=nnentry;
-
+    else treeEntry = fNNChain->LoadTree(nnentry);
     GetNNBranches(treeEntry);
     FillCoord(fCoordi); //The fixed coordinate for THE possible neighbour  event
     fVcoord.push_back(fCoordi);
+  
     FillDiscVar(nnentry); //The discriminatory variable e.g. missing mass
     fVdisVar.push_back(fDiscVar);
   }
-  //Check what the expected distance is given the experimental resolution
-  //Something like this may be useful to define what is fSufficient
-  TVectorD temp(fNcoord);
-  temp[0]=fCoordi[0]+0.005; //beam energy + 10 MeV
-  temp[1]=fCoordi[1]+0.001; //t
-  cout<<"Resolution distance = "<<Distance2(fCoordi,temp)<<endl;
 
   //Trees
   TDirectory* savedir=gDirectory;
@@ -194,7 +188,7 @@ Float_t  THSEventWeighter::Distance2(const TVectorD &vi,const TVectorD &vj){
   vdelta=(vi-vj);
   if (fIsDiagonal){
     distance2=0;
-    for (int qq=0;qq<fNcoord;qq++) distance2+=vdelta[qq]*vdelta[qq]*Dmetric_diagonal[qq];
+    for (int qq=0;qq<fNcoord;qq++){distance2+=vdelta[qq]*vdelta[qq]*Dmetric_diagonal[qq];}
   }
   else{	
     vdelta*=Dmetric;
@@ -212,15 +206,18 @@ void  THSEventWeighter::MakeNNMap(){
   //loop over ALL the events in the users chain
   Long64_t Nch=0;
   //If we have loaded and set a kinmatic bin entry list, use it
-   if(fCurKinBinList) {
+  // cout<< fCurKinBinList->GetName()<<" "<<fCurKinBinList->GetN()<<" "<<fNNChain<<" "<<fCurKinBinList->GetLists()<<" "<<endl;
+  if(fCurKinBinList) {
      Nch=fCurKinBinList->GetN(); 
      fNNChain->SetEntryList(fCurKinBinList);
-     if(fCurKinBinList->GetLists()->GetEntries()!=fNNChain->GetNtrees()){
-       Nch=0;//differnt number of files in entry list to chain, so recalc number of events
+     if(fCurKinBinList->GetLists()){//if only 1 file lists not created
+       if(fCurKinBinList->GetLists()->GetEntries()!=fNNChain->GetNtrees()){
+	 Nch=0;//differnt number of files in entry list to chain, so recalc number of events
          for(Int_t itree=0;itree<fNNChain->GetNtrees();itree++){
-	 Nch+=fCurKinBinList->GetEntryList(fCurKinBinList->GetTreeName(),fNNChain->GetListOfFiles()->At(itree)->GetTitle())->GetN();
+	   Nch+=fCurKinBinList->GetEntryList(fCurKinBinList->GetTreeName(),fNNChain->GetListOfFiles()->At(itree)->GetTitle())->GetN();
+	 }
        }
-     }
+     }	
    }//if chain has entry list
    else Nch=fNNChain->GetEntries();
    Long64_t nnentry=0;
@@ -235,7 +232,7 @@ void  THSEventWeighter::MakeNNMap(){
     else nnentry=chentry;
    //calculate the distance squared 
     curr_dist=Distance2(fCoord0,fVcoord[nnentry]);
-    
+    //if(nnentry<68) cout<<nnentry<<" "<<curr_dist<<" "<<fNNmap.size()<<" "<<fNmax<<" "<<fVcoord.size()<<" "<<fVcoord[nnentry][0]<<endl;
     //now fill map
     if(fNNmap.size()<fNmax){//fill map if not got enough entries
       fNNmap[curr_dist]=nnentry;
@@ -243,17 +240,16 @@ void  THSEventWeighter::MakeNNMap(){
     }   
     it = fNNmap.end();//move to one past last element ("furthest stored neighbour")
     it--; //move back to last element
-    
-    if(curr_dist<it->first){ //fill map if this distance is less than the largest in the map
+     if(curr_dist<it->first){ //fill map if this distance is less than the largest in the map
       fNNmap.erase(it);
       fNNmap[curr_dist]=nnentry;
     }
-    //map filled
-    if(fSufficient){//if set a sufficient distance check for it
-      it = fNNmap.end();//move to one past last element ("furthest stored neighbour")
-      it--; //move back to last element
-      if(fSufficient>it->first) break; //we have enough events close enough
-    }
+     //map filled
+     if(fSufficient){//if set a sufficient distance check for it
+       it = fNNmap.end();//move to one past last element ("furthest stored neighbour")
+       it--; //move back to last element
+       if(fSufficient>it->first) break; //we have enough events close enough
+     }
   }//end NN loop
 }
 void  THSEventWeighter::FillNNEvTree(Long64_t entry){
@@ -292,9 +288,10 @@ void  THSEventWeighter::LoadNNEvTree(Long64_t entry){
   //  Bool_t doFill=0;
   //if(fNNEvTree->GetEntries()>0) {doFill=kFALSE;fNNEvTree->Reset();}
   //if(fVdisVar[0]!=0)return;
-  for(UInt_t ii=0;ii<fNmax;++ii){
-    fVdisVar[ii]=fNNVdisVarP->at(ii);//to keep consistent FillNNEvBranch functionwith standard NN operation
-    FillNNEvBranches(ii); //users must define this function
+  for(UInt_t ii=0;ii<fNNVdisVarP->size();++ii){
+     fVdisVar[ii]=fNNVdisVarP->at(ii);//to keep consistent FillNNEvBranch functionwith standard NN operation
+     // cout<<ii<<" "<< fVdisVar[ii][0]<<" "<<endl;
+     FillNNEvBranches(ii); //users must define this function
     //Fill nn tree for fitting    
     //Note this line causes the processing to slow when also proceed to fitting
     //wihtout fitting it runs very fast ~50kHz
@@ -304,7 +301,7 @@ void  THSEventWeighter::LoadNNEvTree(Long64_t entry){
     //   cout<<fMM<<endl;
      // if(!doFill) continue;
   }
-
+ 
 }
 void  THSEventWeighter::SetupRooFit(){
   //a default/example model for fitting with
