@@ -42,6 +42,7 @@ class THSOutput : public THSHisto{
   TString fOutName;   //name of ouput file or directory
   TString fStrParticles; //string containing detected particles name
   TString fStepName; //Name of directory in fFile to write source code to
+  TList* fStepDir; //Directory containing source code
   TList* fSelInput;  //pointers to the selector input
   TList* fSelOutput;  //pointer to the selector ouput
   TList* fCodeList;  //pointer to the list of source code
@@ -60,7 +61,7 @@ class THSOutput : public THSHisto{
   Int_t fgID; //global event ID number, should be set in first instance of THSOutput and preserved through further steps. Required to synchornise differnt trees as PROOF does not preserve event ordering
 
  public :
- THSOutput() : fFile(0), fProofFile(0), fOutTree(0),fCurTree(0), fEntryList(0),fSelInput(0),fSelOutput(0), fCodeList(0),fParentFile(0),fParentTree(0), fParEntryLists(0) {fSaveID=kFALSE;}   
+ THSOutput() : fFile(0), fProofFile(0), fOutTree(0),fCurTree(0), fEntryList(0),fStepDir(0),fSelInput(0),fSelOutput(0), fCodeList(0),fParentFile(0),fParentTree(0), fParEntryLists(0) {fSaveID=kFALSE;}   
   virtual ~THSOutput();
 
   virtual void InitOutput(); //Configure the output file and tree 

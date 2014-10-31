@@ -66,7 +66,6 @@ void THSHisto::LoadHistograms(){
     //iterate over cuts
     for(vector< TString >::iterator nextcut=fVecCuts.begin();nextcut!=fVecCuts.end();++nextcut){
       //Call the users Histogram list for each declared cut
-      // HistogramList(fVecCuts[ncut++]+sBin); //construct all histograms for this bin, note for ChangeNames to work _Bin%d must be the last part of the name
       HistogramList(fVecCuts[ncut++]+fVecBinNames[ib]); //construct all histograms for this bin,
       fVecHistCut.push_back(fHistNameMap); //enter the histograms for this cut into a vector element
       fHistNameMap.clear(); //clear the previous cut histograms
@@ -79,12 +78,12 @@ void THSHisto::LoadHistograms(){
     fBinEntryLists->Add(el);
     if(dynamic_cast<TSelector*>(this)) dynamic_cast<TSelector*>(this)->GetOutputList()->Add(el);
   }
-  // if(dynamic_cast<TSelector*>(this)) dynamic_cast<TSelector*>(this)->GetOutputList()->Add(fBinEntryLists);
 }
 
 TH1* THSHisto::MapHist(TH1* hist){
   //Place histograms in map for quick look up via their name
   //This should be called in HistogramList and returns the histogram to add to the slector output
+  hist->Sumw2(); //Call sumw2 function for all histograms by default; note doesn't make particular sense to do this here but it is most convenient
   fHistNameMap[TString(hist->GetName())]=hist;
   return hist;
 }
@@ -166,6 +165,12 @@ void THSHisto::ChangeNames(/*TFile* list*/){
   }
   
 }
+void THSHisto::SetBinEntryListsTree(TTree* elt){
+  if(!fBinEntryLists)return;
+  for(Int_t ibel=0;ibel<fBinEntryLists->GetEntries();ibel++)
+    ((TEntryList*)(fBinEntryLists->At(ibel)))->SetTree(elt);
+}
+
 /* void THSHisto::DrawAll(){ */
 /*   //one canvas per histogram */
 /*   //one pad per bin (max 8 per canvas) */

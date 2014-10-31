@@ -49,9 +49,10 @@ class THSHisto {
   virtual TH1* FindHist(TString hname);
 
   void EnterKinBinList(Int_t evBin,Long64_t entry){
+    if(!fBinEntryLists)return;
     ((TEntryList*)fBinEntryLists->At(evBin))->Enter(entry);
   }
-
+  void SetBinEntryListsTree(TTree* elt);//notify of new tree
   //Users will need to declare and define the following functions
   virtual void HistogramList(TString ){};// =0; 
   virtual void FillHistograms(TString ,Int_t ){};// =0;

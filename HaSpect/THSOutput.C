@@ -29,7 +29,6 @@
 #include <iostream>
 #include <algorithm>
 #include "THSOutput.h"
-//#include "THSHisto.h"
 
 using namespace std;
 
@@ -79,9 +78,7 @@ void THSOutput::HSNotify(TTree* tree){
   //Function that looks after the output file
   //Needs to be called in TSelector::Notify()
   fCurTree=tree;
-  //deal with entry lists
-  // fEntryList->SetTree(fCurTree);
-  // cout<<fEntryList<<" "<<fCurTree->GetEntryList()<<" "<<fCurTree->GetDirectory()<<endl;
+  if(fEntryList)fEntryList->SetTree(tree);//This seems to be required in the case of running tree->Process(TSelector) but not tree->Process(Filename), it is not clear why this should be different but this line does not seem to cause problems for the latter case...
   //Check if gID exists in current tree, if not will start saving it now
   if(!tree->GetBranch("fgID")) fSaveID=kTRUE;
    if(fOutName.EndsWith(".root")){
@@ -125,10 +122,8 @@ void THSOutput::HSTerminate(){
       //just going to save code from first file in list
       InDirName=gSystem->DirName(((TEntryList*)elist->GetLists()->At(0))->GetFileName(	));//assume all files in same directory as first
       InFileName=((TEntryList*)elist->GetLists()->At(0))->GetFileName();
-      // eltemp=elist->GetEntryList(elist->GetTreeName(),InFileName);
     }	
     else{//only one file in input chain
-      // eltemp=elist; 
       InFileName=elist->GetFileName();
     }
     TDirectory* savedir=gDirectory;
@@ -139,23 +134,20 @@ void THSOutput::HSTerminate(){
     CopyCode(elfile,infile);
     infile->Close();
     delete infile;
-    cout<<"Written code to "<<fStepName<<endl;
+    cout<<"Written code to "<<fStepName<<endl;//fStepName set in CopyCode
     //Write the entrylist to the step directory
-    //eltemp->SetName(elist->GetName());
     elfile->cd(fStepName); //Write in directory with source code
     elist->Write(0,TObject::kOverwrite);
-    // elfile->Close();
      //If kinematic bins to be saved save them
     //note this is currently only implemented for one .root ouput file
     //the entry lists themselves know which tree from the chain to use
     //Note again the entry list must be saved after the PROOF merge
     //This makes sure all treenames etc. are correct
-     if(elfile) elfile->cd();
-     TDirectory *curDir = gDirectory->mkdir("HSKinBinEntries");
+    if(elfile) elfile->cd();
+    TDirectory *curDir = gDirectory->mkdir("HSKinBinEntries");
     curDir->cd();
     TIter next(fSelOutput);
     TKey* key=0;
-    // next.Begin();
     Long64_t Nkbevs=0;
     while ((key = (TKey*)next()))if(TString(key->GetName()).Contains("HSBin")){//find the HSBin  list
 	fSelOutput->FindObject(fStepName=key->GetName())->Write();
@@ -179,6 +171,7 @@ void THSOutput::HSTerminate(){
  
     //now iterate over output file and write a copy of their event list
     //the event list for each tree is retireved from el
+    TFile* infile=0; //pointer to input file
     while((outo=dynamic_cast<TObject*>(next()))){
       if((elpofile=dynamic_cast<TProofOutputFile*>(outo))){
 	TFile* elfile = elpofile->OpenFile("UPDATE");
@@ -211,18 +204,24 @@ void THSOutput::HSTerminate(){
 	  InFileName=elist->GetFileName();
 	}
 	//Copy original input code to output file
-	TFile* infile=new TFile(InFileName);
-	CopyCode(elfile,infile);
-	infile->Close();
-	delete infile;
+	if(!fStepDir){
+	  infile=new TFile(InFileName);
+	  CopyCode(elfile,infile);
+	}
+	elfile->cd();
+	WriteListtoFile(fStepDir);
 	cout<<"Written code to "<<fStepName<<endl;
 	//Write the entrylist to the step directory
 	eltemp->SetName(elist->GetName());
 	elfile->cd(fStepName); //Write in directory with source code
 	eltemp->Write(0,TObject::kOverwrite);
 	elfile->Close();
+	delete elfile;
       }
     }
+    infile->Close();
+    delete infile;
+
     //Save the overall event list in a new file in output directory
     TFile* allel=new TFile(fOutName+"/ParentEventList.root","recreate");
     elist->Write();
@@ -482,16 +481,17 @@ void THSOutput::CopyCode(TDirectory* curDir,TDirectory* prevDir){
   else fStepName="HSStep_0";
 
   //create list of current source, prepare to add previous code form in file
-  TList* stepDir=(TList*)fCodeList->Clone();
-  stepDir->SetOwner();
-  stepDir->SetName(fStepName);
-
+  if(!fStepDir){
+    fStepDir=(TList*)fCodeList->Clone();
+    fStepDir->SetOwner();
+    fStepDir->SetName(fStepName);
+  
   //If there was a previous step copy its source to the new step list
-  if(prevStep) stepDir->Add(CopyDirtoList(prevStep));
-
+  if(prevStep) fStepDir->Add(CopyDirtoList(prevStep));
+  }
   //Write the source code to the output file curDir
   curDir->cd();
-  WriteListtoFile(stepDir);
+  // WriteListtoFile(fStepDir);
   savedir->cd();
 
 }

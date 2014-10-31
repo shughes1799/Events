@@ -4,6 +4,7 @@ Bool_t IsAppendTree=kFALSE; //Append branches to the input tree
 Bool_t IsNewTree=kFALSE;  //Output a brand new tree
 Bool_t IsHSTree=kFALSE;   //Use THSOuput to THSParticle interface (probably not)
 Bool_t IsQval=kFALSE;   //Use Qvale event weighting algorithm
+Bool_t IsSW=kFALSE;   //Use SWeight event weighting algorithm
 
 TString FileName;   // The input filename containing the tree
 TString TreeName;   // The name of the tree
@@ -39,6 +40,8 @@ void MakeHSSelector(Bool_t IsOverwrite=kFALSE){
   //Combine with a parent tree
   if(IsParent)ConnectParent();
 
+  //Use sWeights
+  if(IsSW)UseSWeight();
   //Make the Control macro
   //First set the variable to the HASPECT source code
   ControlMacro();
@@ -358,6 +361,7 @@ void HSit_h(){
 
   markers->Add(new TObjString("// user if needed. The return value is currently not used."));
   hslines->Add(new TObjString("   THSOutput::HSNotify(fChain);"));
+  hslines->Add(new TObjString("   THSHisto::SetBinEntryListsTree(fChain);"));
 
 
 
@@ -471,6 +475,133 @@ void HSit_h(){
 
 
   macro.SaveSource(SelName+".h");
+}
+void UseSWeight(){
+  ///////////////////////////////////HEADER
+ //now open .h file and add lines
+  TMacro macroH(SelName+".h");
+  TList *lines=macroH.GetListOfLines();
+  TObject* obj=0;
+
+  //Additional data members
+  obj=macroH.GetLineWith( "virtual void    Terminate();");
+  Int_t place=lines->IndexOf(obj)+1; //get line number   
+  lines->AddAt(new TObjString("   //Data members for reading sPlots"),place++); 
+  lines->AddAt(new TObjString("   RooStats::SPlot* fCurrSW;//sPlot object for current event, depends on kinematic binning"),place++); 
+  lines->AddAt(new TObjString("   TFile *fSWFile;//File containing the sPlots produced by THS_sWeights.C"),place++); 
+  lines->AddAt(new TObjString("   TObjArray* fsPlotList;//Array of sPlots for each kinematic bin"),place++); 
+  lines->AddAt(new TObjString("   vector<Long64_t> fSEntry;//Counters for each sPlot kinematic bin, needed to synch chain with splots"),place++); 
+  lines->AddAt(new TObjString("   Double_t fSigW;//signal weight, note in general splots may produce more than 2 types of event in which case additional weights will be needed here"),place++); 
+  lines->AddAt(new TObjString("   Double_t fBckW;//background weight"),place++); 
+  lines->AddAt(new TObjString("   TH1* fSWKinBins;//Histogram defining kinematic bins (if used) for sPlots"),place++); 
+  lines->AddAt(new TObjString("   Int_t fSWBin; //ID for current SPlot kinematic bin"),place++); 
+  lines->AddAt(new TObjString("   void SetsPlot(Float_t ev1,Float_t ev2=0,Float_t ev3=0); //Function to find the sPlot for the event"),place++); 
+   //header info
+  obj=macroH.GetLineWith( "#include \"THSOutput.h\"");
+  place=lines->IndexOf(obj)+1; //get line number   
+  lines->AddAt(new TObjString("// use this order for safety on library loading"),place++); 
+  lines->AddAt(new TObjString("#include \"RooGlobalFunc.h\""),place++); 
+  lines->AddAt(new TObjString("#include \"RooStats/SPlot.h\""),place++); 
+  lines->AddAt(new TObjString("using namespace RooFit ;"),place++); 
+  lines->AddAt(new TObjString("using namespace RooStats ;"),place++); 
+
+  //Additional initialisation at constructor
+  TString sline=macroH.GetLineWith("fChain(0)")->GetString();
+  sline.ReplaceAll("fChain(0)","fChain(0),fCurrSW(0),fSWFile(0),fsPlotList(0),fSWKinBins(0)");
+  macroH.GetLineWith("fChain(0)")->SetString(sline);
+
+  //SetsPlots function, put at end of file
+  obj=macroH.GetLineWith( "#endif // #ifdef");
+  place=lines->IndexOf(obj)-1; //get line number   
+  lines->AddAt(new TObjString(TString("void ")+SelName+"::SetsPlot(Float_t ev1,Float_t ev2,Float_t ev3){"),place++); 
+  lines->AddAt(new TObjString("  //Function that finds the bin number and uses it to find the correct sPlot   "),place++); 
+  lines->AddAt(new TObjString("   fSWBin=0;"),place++); 
+  lines->AddAt(new TObjString("      if(fSWKinBins){//can only find bin if have histogram which defines them"),place++); 
+  lines->AddAt(new TObjString("      fSWBin=fSWKinBins->FindBin(ev1,ev2,ev3); //find bin"),place++); 
+  lines->AddAt(new TObjString("   if(fsPlotList) fCurrSW=dynamic_cast<RooStats::SPlot*>(fsPlotList->At(fSWBin));//note dynamic cast returns NULL if object can't be cast"),place++); 
+  lines->AddAt(new TObjString("     }"),place++); 
+  lines->AddAt(new TObjString("  //if no bins defined get just the first sPlot from the list once "),place++); 
+  lines->AddAt(new TObjString("    else if(!fCurrSW)  fCurrSW=dynamic_cast<RooStats::SPlot*>(fsPlotList->At(0));"),place++); 
+  lines->AddAt(new TObjString("}"),place++); 
+ 
+
+  //Add brances if appending tree with weights
+  if(IsAppendTree){//Automiatically add Qval, SigmaMean etc to appened tree
+     obj=macroH.GetLineWith( "//e.g. fOutTree->Branch(\"p1\",&fp1,buff,split);");
+     place=lines->IndexOf(obj)+1; //get line number
+     lines->AddAt(new TObjString("   //sWeight append branches"),place++); 
+     lines->AddAt(new TObjString("   fOutTree->Branch(\"SigW\",&fSigW,\"SigW/F\");"),place++); 
+     lines->AddAt(new TObjString("   fOutTree->Branch(\"BckW\",&fBckW,\"BckW/F\");"),place++);     
+   }
+  macroH.SaveSource(SelName+".h");
+
+  ////////////////////////////////////.C
+ //now open .C file and add lines
+  TMacro macroC(SelName+".C");
+  lines=macroC.GetListOfLines();
+  obj=0;
+  if(IsNewTree){//if creating new file for sWeight branches
+    obj=macro.GetLineWith( "//e.g.  fOutTree->Branch(\"p1\",&fp1,buff,split);");
+    place=lines->IndexOf(obj)+1; //get line number
+    lines->AddAt(new TObjString("   //sWeighter make new output tree"),place++); 
+    lines->AddAt(new TObjString("   fOutTree->Branch(\"SigW\",&fSigW,\"SigW/F\");"),place++); 
+    lines->AddAt(new TObjString("   fOutTree->Branch(\"BckW\",&fBckW,\"BckW/F\");"),place++);     
+  }
+  //SlaveBegin get the sPlots list and SWKinBins file
+  obj=macroC.GetLineWith( "THSOutput::HSSlaveBegin(fInput,fOutput);");
+  place=lines->IndexOf(obj)+1; //get line number   
+  lines->AddAt(new TObjString("   //Get the sPlot, this should be a list containing an splot for each kinematic bin"),place++); 
+  lines->AddAt(new TObjString("   //This will have been produced by the THS_sWeight macro"),place++); 
+  lines->AddAt(new TObjString("   TDirectory* savedir=gDirectory;"),place++); 
+  lines->AddAt(new TObjString("   fSWFile=new TFile(option);//take the filename from the tree->Process() option"),place++); 
+  lines->AddAt(new TObjString("   fsPlotList=(TObjArray*)fSWFile->Get(\"HSsPlots\");//List should have name HSsPlots"),place++); 
+  lines->AddAt(new TObjString("   if(!fsPlotList){cerr<<\"Sorry no sPlots found in SlaveBegin, exiting\"<<endl;exit(0);}"),place++); 
+  lines->AddAt(new TObjString("   fSEntry.assign(fsPlotList->GetEntries(),0);//initiate kinematic bin counters"),place++); 
+  lines->AddAt(new TObjString("   fSWKinBins=(TH1*)fSWFile->Get(\"HSsPlotsBins\");//get histogram defining SW bins"),place++); 
+  lines->AddAt(new TObjString("   savedir->cd();"),place++); 
+  lines->AddAt(new TObjString("   fSWBin=0;"),place++); 
+
+  //Process, get the sWEights from the sPlots
+  obj=macroC.GetLineWith( "//Ready to do some analysis here, before the Fill");
+  place=lines->IndexOf(obj)+1; //get line number  
+  lines->AddAt(new TObjString("   if(fSWKinBins)SetsPlot(0,0,0); //get the SW bin for this event, need to replace 0s by real variable...,"),place++); 
+  lines->AddAt(new TObjString("   else SetsPlot(0);"),place++); 
+  lines->AddAt(new TObjString("   if(fCurrSW){"),place++); 
+  lines->AddAt(new TObjString("      fSigW=fCurrSW->GetSWeight(fSEntry[fSWBin],\"SigYield\") ;//SigYield is name given in THS_sWeight"),place++); 
+  lines->AddAt(new TObjString("       fBckW=fCurrSW->GetSWeight(fSEntry[fSWBin],\"BckYield\") ;"),place++); 
+  lines->AddAt(new TObjString("       fSEntry[fSWBin]++;"),place++); 
+  lines->AddAt(new TObjString("   }"),place++); 
+  lines->AddAt(new TObjString("   else{"),place++); 
+  lines->AddAt(new TObjString("       fSigW=0;fBckW=0;}"),place++); 
+
+  //Slave Terminate, close the file
+  obj=macroC.GetLineWith( "THSOutput::HSSlaveTerminate();");
+  place=lines->IndexOf(obj)+1; //get line number  
+  lines->AddAt(new TObjString("   fSWFile->Close();"),place++);
+  lines->AddAt(new TObjString("   delete fSWFile;"),place++);
+
+  macroC.SaveSource(SelName+".C");
+
+  //copy the THS_sWeight.C template from the $HSANA directory
+  gSystem->CopyFile(HSANA+"/THS_sWeight.C",TString ("./")+SelName+TString("_sWeight.C"));
+  TMacro macroS(SelName+TString("_sWeight.C"));
+  TString swline=macroS.GetLineWith("void THS_sWeight(){")->GetString();
+  swline.ReplaceAll("THS_sWeight()",SelName+TString("_sWeight()"));
+  macroS.GetLineWith("void THS_sWeight(){")->SetString(swline);
+  TString  swline2=macroS.GetLineWith(".x THS_sWeight.C")->GetString();
+  swline2.ReplaceAll("THS_sWeight",SelName+TString("_sWeight"));
+  macroS.GetLineWith(".x THS_sWeight.C")->SetString(swline2);
+
+
+  macroS.SaveSource(SelName+TString("_sWeight.C"));
+
+  //Control macro
+  TMacro macroCon(TString("Control_")+SelName+".C");
+  TString cline=macroCon.GetLineWith("tree->Process(")->GetString();
+  cline.ReplaceAll(");",",\"SPLOTS_FILE_HERE\");");
+  macroCon.GetLineWith("tree->Process(")->SetString(cline);
+  macroCon.SaveSource(TString("Control_")+SelName+".C");
+
 }
 void ConnectParent(){
   //Add a parent tree selector to this selector

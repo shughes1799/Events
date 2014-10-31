@@ -232,7 +232,6 @@ void  THSEventWeighter::MakeNNMap(){
     else nnentry=chentry;
    //calculate the distance squared 
     curr_dist=Distance2(fCoord0,fVcoord[nnentry]);
-    //if(nnentry<68) cout<<nnentry<<" "<<curr_dist<<" "<<fNNmap.size()<<" "<<fNmax<<" "<<fVcoord.size()<<" "<<fVcoord[nnentry][0]<<endl;
     //now fill map
     if(fNNmap.size()<fNmax){//fill map if not got enough entries
       fNNmap[curr_dist]=nnentry;
@@ -240,17 +239,17 @@ void  THSEventWeighter::MakeNNMap(){
     }   
     it = fNNmap.end();//move to one past last element ("furthest stored neighbour")
     it--; //move back to last element
-     if(curr_dist<it->first){ //fill map if this distance is less than the largest in the map
+    if(curr_dist<it->first){ //fill map if this distance is less than the largest in the map
       fNNmap.erase(it);
       fNNmap[curr_dist]=nnentry;
     }
-     //map filled
-     if(fSufficient){//if set a sufficient distance check for it
-       it = fNNmap.end();//move to one past last element ("furthest stored neighbour")
-       it--; //move back to last element
-       if(fSufficient>it->first) break; //we have enough events close enough
-     }
-  }//end NN loop
+    //map filled
+    if(fSufficient){//if set a sufficient distance check for it
+      it = fNNmap.end();//move to one past last element ("furthest stored neighbour")
+      it--; //move back to last element
+      if(fSufficient>it->first) break; //we have enough events close enough
+    }
+   }//end NN loop
 }
 void  THSEventWeighter::FillNNEvTree(Long64_t entry){
   fNNEvTree->Reset(); //get rid of previous event
@@ -258,10 +257,6 @@ void  THSEventWeighter::FillNNEvTree(Long64_t entry){
   //fNNMap->first = distance; fNNMap->second= event id
   map<Float_t,Int_t>::iterator it; //iterator for fNNMap
   Int_t count=0;
-  // Bool_t doFill=0;
-  //if(fNNEvTree->GetEntries()>0) {doFill=kFALSE;fNNEvTree->Reset();}
-  // RooRealVar* RFvx=fRooFit->var("MM");
-  //RooDataSet *nn_data=(RooDataSet*)(fRooFit->data("NNset"));
   //nn_data->reset();
   if(fIsSaveNN)fNNVdisVar.clear();
   for(it =fNNmap.begin();it !=fNNmap.end();it++){
@@ -274,9 +269,6 @@ void  THSEventWeighter::FillNNEvTree(Long64_t entry){
     //put it in nn vector for writing to tree
       if(fIsSaveNN)fNNVdisVar.push_back(fVdisVar[it->second]);
     }
-    //do some histogramming
-    //fCoordi=fVcoord[it->second];
-    // FillHistograms("CutNN",0);
     count++;
   }//tree should now be filled with fNmax events
   //Save to tree of trees
@@ -285,12 +277,8 @@ void  THSEventWeighter::FillNNEvTree(Long64_t entry){
 void  THSEventWeighter::LoadNNEvTree(Long64_t entry){
   //Load sa saved tree of nearest neignbours for fitting
   fNNChainLoad->GetEntry(fOffNNChain+entry);
-  //  Bool_t doFill=0;
-  //if(fNNEvTree->GetEntries()>0) {doFill=kFALSE;fNNEvTree->Reset();}
-  //if(fVdisVar[0]!=0)return;
   for(UInt_t ii=0;ii<fNNVdisVarP->size();++ii){
      fVdisVar[ii]=fNNVdisVarP->at(ii);//to keep consistent FillNNEvBranch functionwith standard NN operation
-     // cout<<ii<<" "<< fVdisVar[ii][0]<<" "<<endl;
      FillNNEvBranches(ii); //users must define this function
     //Fill nn tree for fitting    
     //Note this line causes the processing to slow when also proceed to fitting
@@ -298,8 +286,6 @@ void  THSEventWeighter::LoadNNEvTree(Long64_t entry){
     //without this fitting runs fast ~1kHz
     //with both the rate is 100Hz.....
      fNNEvTree->Fill(); 
-    //   cout<<fMM<<endl;
-     // if(!doFill) continue;
   }
  
 }
