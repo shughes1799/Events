@@ -491,8 +491,8 @@ void UseSWeight(){
   lines->AddAt(new TObjString("   TFile *fSWFile;//File containing the sPlots produced by THS_sWeights.C"),place++); 
   lines->AddAt(new TObjString("   TObjArray* fsPlotList;//Array of sPlots for each kinematic bin"),place++); 
   lines->AddAt(new TObjString("   vector<Long64_t> fSEntry;//Counters for each sPlot kinematic bin, needed to synch chain with splots"),place++); 
-  lines->AddAt(new TObjString("   Double_t fSigW;//signal weight, note in general splots may produce more than 2 types of event in which case additional weights will be needed here"),place++); 
-  lines->AddAt(new TObjString("   Double_t fBckW;//background weight"),place++); 
+  lines->AddAt(new TObjString("   Float_t fSigW;//signal weight, note in general splots may produce more than 2 types of event in which case additional weights will be needed here"),place++); 
+  lines->AddAt(new TObjString("   Float_t fBckW;//background weight"),place++); 
   lines->AddAt(new TObjString("   TH1* fSWKinBins;//Histogram defining kinematic bins (if used) for sPlots"),place++); 
   lines->AddAt(new TObjString("   Int_t fSWBin; //ID for current SPlot kinematic bin"),place++); 
   lines->AddAt(new TObjString("   void SetsPlot(Float_t ev1,Float_t ev2=0,Float_t ev3=0); //Function to find the sPlot for the event"),place++); 

@@ -131,7 +131,12 @@ void THSOutput::HSTerminate(){
     
     //Copy original input code to output file
     TFile* infile=new TFile(InFileName);
-    CopyCode(elfile,infile);
+    if(!fStepDir){
+      infile=new TFile(InFileName);
+      CopyCode(elfile,infile);
+    }
+    elfile->cd();
+    WriteListtoFile(fStepDir);
     infile->Close();
     delete infile;
     cout<<"Written code to "<<fStepName<<endl;//fStepName set in CopyCode
