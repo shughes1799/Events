@@ -40,11 +40,11 @@ void MakeHSSelector(Bool_t IsOverwrite=kFALSE){
   //Combine with a parent tree
   if(IsParent)ConnectParent();
 
-  //Use sWeights
-  if(IsSW)UseSWeight();
-  //Make the Control macro
+   //Make the Control macro
   //First set the variable to the HASPECT source code
   ControlMacro();
+ //Use sWeights
+  if(IsSW)UseSWeight();
 }
 void ControlMacro(){
   TString HSANA=gSystem->Getenv("HSANA");
@@ -401,11 +401,12 @@ void HSit_h(){
     lines->AddAt(new TObjString("   Int_t split=0;//note split is important in the TSelector framework, if increased branches in subsequent selectors will be data members of the THSParticle object rather than the whole object (this can lead to name conflicts)
 "),place+4); 
     lines->AddAt(new TObjString("    fOutTree=fChain->CloneTree(0);"),place+5);
-    lines->AddAt(new TObjString("    //e.g. fp1=new TLorentzVector(); //should be declared as class data member"),place+6);
+    lines->AddAt(new TObjString("    fOutTree->SetDirectory(fFile);"),place+6);
+    lines->AddAt(new TObjString("    //e.g. fp1=new TLorentzVector(); //should be declared as class data member"),place+7);
  
-    lines->AddAt(new TObjString("    //e.g. fOutTree->Branch(\"p1\",&fp1,buff,split);"),place+7); 
-    lines->AddAt(new TObjString("  }"),place+8); 
-    lines->AddAt(new TObjString("  else fChain->CopyAddresses(fOutTree);//reset the branch addresses of the cloned tree to the new file tree"),place+9); 
+    lines->AddAt(new TObjString("    //e.g. fOutTree->Branch(\"p1\",&fp1,buff,split);"),place+8); 
+    lines->AddAt(new TObjString("  }"),place+9); 
+    lines->AddAt(new TObjString("  else {fChain->CopyAddresses(fOutTree);fOutTree->SetDirectory(fFile);}//reset the branch addresses of the cloned tree to the new file tree"),place+10); 
     
     //Put in an example data member
     obj=macro.GetLineWith( "// List of branches");
@@ -541,7 +542,7 @@ void UseSWeight(){
   lines=macroC.GetListOfLines();
   obj=0;
   if(IsNewTree){//if creating new file for sWeight branches
-    obj=macro.GetLineWith( "//e.g.  fOutTree->Branch(\"p1\",&fp1,buff,split);");
+    obj=macroC.GetLineWith( "//e.g.  fOutTree->Branch(\"p1\",&fp1,buff,split);");
     place=lines->IndexOf(obj)+1; //get line number
     lines->AddAt(new TObjString("   //sWeighter make new output tree"),place++); 
     lines->AddAt(new TObjString("   fOutTree->Branch(\"SigW\",&fSigW,\"SigW/F\");"),place++); 

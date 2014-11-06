@@ -1,0 +1,35 @@
+digraph swPDF{
+"swPDF" [ color=red, label="RooAddPdf
+swPDF"];
+"SignalPDF" [ color=red, label="RooGaussian
+SignalPDF"];
+"Mmiss" [ color=blue, label="RooRealVar
+Mmiss"];
+"SigMean" [ color=blue, label="RooRealVar
+SigMean"];
+"SigWidth" [ color=blue, label="RooRealVar
+SigWidth"];
+"SigYield" [ color=blue, label="RooRealVar
+SigYield"];
+"BackPDF" [ color=red, label="RooChebychev
+BackPDF"];
+"l0" [ color=blue, label="RooRealVar
+l0"];
+"l1" [ color=blue, label="RooRealVar
+l1"];
+"l2" [ color=blue, label="RooRealVar
+l2"];
+"BckYield" [ color=blue, label="RooRealVar
+BckYield"];
+"SignalPDF" -> "Mmiss";
+"SignalPDF" -> "SigMean";
+"SignalPDF" -> "SigWidth";
+"BackPDF" -> "Mmiss";
+"BackPDF" -> "l0";
+"BackPDF" -> "l1";
+"BackPDF" -> "l2";
+"swPDF" -> "SigYield";
+"swPDF" -> "BckYield";
+"swPDF" -> "SignalPDF";
+"swPDF" -> "BackPDF";
+}

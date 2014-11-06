@@ -11,14 +11,14 @@
  IsQval=kFALSE;   //Use Qvalue event weighting algorithm
  IsSW=kFALSE;   //Use sWeights event weighting algorithm
 
- FileName="/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HSID/inp1_50.root";   // The input filename containing the tree
- TreeName="HSParticles";   // The name of the tree
- OutName="/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HSID/DecayApp";   // The name of the output directory or file
- SelName="ThreePiDecayApp";    // The name of the selector to be produced
+ FileName="/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HSID2/Weighted/sWeights/inp1_50.root";   // The input filename containing the tree
+ TreeName="sWeights";   // The name of the tree
+ OutName="/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HSID2/Weighted/sWeights/Merged";   // The name of the output directory or file
+ SelName="MergeWeights";    // The name of the selector to be produced
 
- //IsParent=kTRUE; //use connection with parent tree
- //StepN=0;        // If connecting with parent, which step number is its selector in
- //ParSel="";
+ IsParent=kTRUE; //use connection with parent tree
+ StepN=1;        // If connecting with parent, which step number is its selector in
+ ParSel="Simplify";
 
  //Make the selector skeleton + control files in this directory 
  //This is based on the info given above

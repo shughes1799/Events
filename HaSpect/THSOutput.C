@@ -81,7 +81,7 @@ void THSOutput::HSNotify(TTree* tree){
   if(fEntryList)fEntryList->SetTree(tree);//This seems to be required in the case of running tree->Process(TSelector) but not tree->Process(Filename), it is not clear why this should be different but this line does not seem to cause problems for the latter case...
   //Check if gID exists in current tree, if not will start saving it now
   if(!tree->GetBranch("fgID")) fSaveID=kTRUE;
-   if(fOutName.EndsWith(".root")){
+  if(fOutName.EndsWith(".root")){
     //Only want to do some things once when writing 1 file only
      if(fStepName.Length()==0){
        InitOutFile(fCurTree); //initialise output file
@@ -90,7 +90,7 @@ void THSOutput::HSNotify(TTree* tree){
      }
     else return; //only saving one combined file
    }
- //Case only making one output file
+ //Case  making many output files
   FinishOutput(); //close the last file
   InitOutFile(fCurTree);   //start the new file
   return;
@@ -208,15 +208,13 @@ void THSOutput::HSTerminate(){
 	  eltemp=elist; 
 	  InFileName=elist->GetFileName();
 	}
-	//Copy original input code to output file
-	if(!fStepDir){
-	  infile=new TFile(InFileName);
-	  CopyCode(elfile,infile);
-	}
+	//Copy original input code(and previous entry lists) to output file
+	infile=new TFile(InFileName);
+	CopyCode(elfile,infile);
 	elfile->cd();
 	WriteListtoFile(fStepDir);
 	cout<<"Written code to "<<fStepName<<endl;
-	//Write the entrylist to the step directory
+	//Write the new entrylist to the step directory
 	eltemp->SetName(elist->GetName());
 	elfile->cd(fStepName); //Write in directory with source code
 	eltemp->Write(0,TObject::kOverwrite);
@@ -335,6 +333,7 @@ void THSOutput::InitParent(TTree* ctree,TString step){
   // exit(1);
   //get the entry list of the parent from te file of the current tree
   TFile* infile=ctree->GetCurrentFile();
+  cout<<infile->GetName()<<endl;
   //Get the chain of entry lists leading to the selected parent list
   //This allows determination of the parent entry number if several
   //sequences of filtering have been performed
@@ -424,8 +423,8 @@ void THSOutput::InitOutFile(TTree* chain){
   cout<<"InitOut "<<ofname<<endl;
   TDirectory* savedir=gDirectory;
   Info("Notify", "processing file: %s", ofname.Data());
-   if(fFile)	SafeDelete(fFile);
-   //  if(fProofFile)	SafeDelete(fProofFile);
+  if(fFile)	SafeDelete(fFile);
+   //if(fProofFile)	SafeDelete(fProofFile);
   cout<<"Making new proof file "<<ofname<<endl;
   fProofFile = 0;
   fFile = 0;
@@ -441,17 +440,12 @@ void THSOutput::InitOutFile(TTree* chain){
    if(fOutTree){
      fOutTree->SetDirectory(fFile);
      fOutTree->AutoSave();
-     cout<<fOutTree->GetBranch("fgID")<<fSaveID<<endl;
+     //cout<<fOutTree->GetBranch("fgID")<<fSaveID<<endl;
      if(!fOutTree->GetBranch("fgID"))fOutTree->Branch("fgID", &fgID, "fgID/I");
      if(!fSaveID)//copy existing global ID
        fOutTree->SetBranchAddress("fgID",chain->GetBranch("fgID")->GetAddress());
    }
    
-   //Save all relevent source code to the ROOT file so analysis can be rerun
-   //here we are only going to write unpack macro if writing multiple files
-   //PROOF cannot merge macros, so will just write it in terminate
-   //in case of writing to single file
-   //  if(!fOutName.EndsWith(".root")) CopyCode(fFile,chain->GetCurrentFile());
    gDirectory = savedir;
 
 }
@@ -486,14 +480,14 @@ void THSOutput::CopyCode(TDirectory* curDir,TDirectory* prevDir){
   else fStepName="HSStep_0";
 
   //create list of current source, prepare to add previous code form in file
-  if(!fStepDir){
-    fStepDir=(TList*)fCodeList->Clone();
-    fStepDir->SetOwner();
-    fStepDir->SetName(fStepName);
+  if(fStepDir) delete fStepDir; //cleanup previous step directory
+  fStepDir=(TList*)fCodeList->Clone();
+  fStepDir->SetOwner();
+  fStepDir->SetName(fStepName);
   
   //If there was a previous step copy its source to the new step list
   if(prevStep) fStepDir->Add(CopyDirtoList(prevStep));
-  }
+  
   //Write the source code to the output file curDir
   curDir->cd();
   // WriteListtoFile(fStepDir);

@@ -1,12 +1,12 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Thu Nov  6 16:27:12 2014 by ROOT version 5.34/14
+// Wed Nov  5 10:45:18 2014 by ROOT version 5.34/14
 // from TTree HSParticles/A tree containing reconstructed particles
-// found on file: /home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HSID/inp1_50.root
+// found on file: /home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HSID2/inp1_50.root
 //////////////////////////////////////////////////////////
 
-#ifndef ThreePiDecayApp_h
-#define ThreePiDecayApp_h
+#ifndef Simplify_h
+#define Simplify_h
 
 #include <TROOT.h>
 #include <TChain.h>
@@ -19,7 +19,7 @@
 
 // Fixed size dimensions of array or collections stored in the TTree if any.
 
-class ThreePiDecayApp : public TSelector, public THSOutput {
+class Simplify : public TSelector, public THSOutput {
 public :
    TTree          *fChain;   //!pointer to the analyzed TTree or TChain
 
@@ -37,8 +37,12 @@ public :
   //data members for new branches
   //you must define how they are processed for each event
   //e.g.   TLorentzVector  *fp1;
-   TLorentzVector  *fTwoPiCM;
-   TLorentzVector  *fOnePiCM;
+   Float_t Mmiss;  //the overal missing mass
+   Float_t M2pif;  //the dipion mass with fast pi+ and pi-
+   Float_t M2pis;  //the dipion mass with slow pi+ and pi-
+   Float_t M3pi;   //the mass of tripion
+   Float_t Eg;     //the beam energy
+
    // List of branches
    TBranch        *b_pim_0;   //!
    TBranch        *b_pip_0;   //!
@@ -51,8 +55,8 @@ public :
    TBranch        *b_ft;   //!
    TBranch        *b_fgID;   //!
 
-   ThreePiDecayApp(TTree * /*tree*/ =0) : fChain(0) { }
-   virtual ~ThreePiDecayApp() {SafeDelete(fTwoPiCM);SafeDelete(fOnePiCM); }
+   Simplify(TTree * /*tree*/ =0) : fChain(0) { }
+   virtual ~Simplify() { }
    virtual Int_t   Version() const { return 2; }
    virtual void    Begin(TTree *tree);
    virtual void    SlaveBegin(TTree *tree);
@@ -67,13 +71,13 @@ public :
    virtual void    SlaveTerminate();
    virtual void    Terminate();
 
-   ClassDef(ThreePiDecayApp,0);
+   ClassDef(Simplify,0);
 };
 
 #endif
 
-#ifdef ThreePiDecayApp_cxx
-void ThreePiDecayApp::Init(TTree *tree)
+#ifdef Simplify_cxx
+void Simplify::Init(TTree *tree)
 {
    // The Init() function is called when the selector needs to initialize
    // a new tree or chain. Typically here the branch addresses and branch
@@ -109,7 +113,7 @@ void ThreePiDecayApp::Init(TTree *tree)
    fChain->SetBranchAddress("fgID", &fgID, &b_fgID);
 }
 
-Bool_t ThreePiDecayApp::Notify()
+Bool_t Simplify::Notify()
 {
    // The Notify() function is called when a new file is opened. This
    // can be either for a new TTree in a TChain or when when a new TTree
@@ -117,22 +121,8 @@ Bool_t ThreePiDecayApp::Notify()
    // to the generated code, but the routine can be extended by the
    // user if needed. The return value is currently not used.
    THSOutput::HSNotify(fChain);
-  //If we want to clone the input tree we have to do it here as fChain does not exist in SlaveBegin on PROOF
-  if(!fOutTree){//First file, clone the input tree and add branches
-   Int_t buff=32000;
-   Int_t split=0;//note split is important in the TSelector framework, if increased branches in subsequent selectors will be data members of the THSParticle object rather than the whole object (this can lead to name conflicts)
-
-    fOutTree=fChain->CloneTree(0);
-    fOutTree->SetDirectory(fFile);
-    //e.g. fp1=new TLorentzVector(); //should be declared as class data member
-    //e.g. fOutTree->Branch("p1",&fp1,buff,split);
-    fTwoPiCM=new TLorentzVector();
-    fOnePiCM=new TLorentzVector();
-    fOutTree->Branch("TwoPiCM",&fTwoPiCM,buff,split);
-    fOutTree->Branch("OnePiCM",&fOnePiCM,buff,split);  }
-  else {fChain->CopyAddresses(fOutTree);fOutTree->SetDirectory(fFile);}//reset the branch addresses of the cloned tree to the new file tree
 
    return kTRUE;
 }
 
-#endif // #ifdef ThreePiDecayApp_cxx
+#endif // #ifdef Simplify_cxx

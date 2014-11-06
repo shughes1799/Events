@@ -1,58 +1,44 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Thu Nov  6 16:27:12 2014 by ROOT version 5.34/14
-// from TTree HSParticles/A tree containing reconstructed particles
-// found on file: /home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HSID/inp1_50.root
+// Wed Nov  5 14:45:23 2014 by ROOT version 5.34/14
+// from TTree sWeights/A tree containing reconstructed particles
+// found on file: /home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HSID2/Weighted/sWeights/inp1_50.root
 //////////////////////////////////////////////////////////
 
-#ifndef ThreePiDecayApp_h
-#define ThreePiDecayApp_h
+#ifndef MergeWeights_h
+#define MergeWeights_h
 
 #include <TROOT.h>
 #include <TChain.h>
 #include <TFile.h>
 #include <TSelector.h>
 #include "THSOutput.h"
+#include "Simplify.h"
 
 // Header file for the classes stored in the TTree if any.
-#include <TLorentzVector.h>
 
 // Fixed size dimensions of array or collections stored in the TTree if any.
 
-class ThreePiDecayApp : public TSelector, public THSOutput {
+class MergeWeights : public TSelector, public THSOutput {
 public :
    TTree          *fChain;   //!pointer to the analyzed TTree or TChain
+   Simplify   fParent;
 
    // Declaration of leaf types
-   THSParticle     *pim_0;
-   THSParticle     *pip_0;
-   THSParticle     *pip_1;
-   THSParticle     *beam;
-   TLorentzVector  *miss;
-   TLorentzVector  *ThreePi;
-   TLorentzVector  *TwoPiF;
-   TLorentzVector  *TwoPiS;
-   Float_t         t;
+   Float_t         SigW;
+   Float_t         BckW;
    Int_t           fgID;
   //data members for new branches
   //you must define how they are processed for each event
   //e.g.   TLorentzVector  *fp1;
-   TLorentzVector  *fTwoPiCM;
-   TLorentzVector  *fOnePiCM;
+
    // List of branches
-   TBranch        *b_pim_0;   //!
-   TBranch        *b_pip_0;   //!
-   TBranch        *b_pip_1;   //!
-   TBranch        *b_beam;   //!
-   TBranch        *b_miss;   //!
-   TBranch        *b_ThreePi;   //!
-   TBranch        *b_TwoPiF;   //!
-   TBranch        *b_TwoPiS;   //!
-   TBranch        *b_ft;   //!
+   TBranch        *b_SigW;   //!
+   TBranch        *b_BckW;   //!
    TBranch        *b_fgID;   //!
 
-   ThreePiDecayApp(TTree * /*tree*/ =0) : fChain(0) { }
-   virtual ~ThreePiDecayApp() {SafeDelete(fTwoPiCM);SafeDelete(fOnePiCM); }
+   MergeWeights(TTree * /*tree*/ =0) : fChain(0) { }
+   virtual ~MergeWeights() { }
    virtual Int_t   Version() const { return 2; }
    virtual void    Begin(TTree *tree);
    virtual void    SlaveBegin(TTree *tree);
@@ -67,13 +53,13 @@ public :
    virtual void    SlaveTerminate();
    virtual void    Terminate();
 
-   ClassDef(ThreePiDecayApp,0);
+   ClassDef(MergeWeights,0);
 };
 
 #endif
 
-#ifdef ThreePiDecayApp_cxx
-void ThreePiDecayApp::Init(TTree *tree)
+#ifdef MergeWeights_cxx
+void MergeWeights::Init(TTree *tree)
 {
    // The Init() function is called when the selector needs to initialize
    // a new tree or chain. Typically here the branch addresses and branch
@@ -81,35 +67,21 @@ void ThreePiDecayApp::Init(TTree *tree)
    // It is normally not necessary to make changes to the generated
    // code, but the routine can be extended by the user if needed.
    // Init() will be called many times when running on PROOF
-   // (once per file to be processed).
-
-   // Set object pointer
-   pim_0 = 0;
-   pip_0 = 0;
-   pip_1 = 0;
-   beam = 0;
-   miss = 0;
-   ThreePi = 0;
-   TwoPiF = 0;
-   TwoPiS = 0;
+    // (once per file to be processed).
+  b_SigW=0;
+  b_BckW=0;
+  // b_fgID=0;
    // Set branch addresses and branch pointers
    if (!tree) return;
    fChain = tree;
    fChain->SetMakeClass(1);
 
-   fChain->SetBranchAddress("pim_0", &pim_0, &b_pim_0);
-   fChain->SetBranchAddress("pip_0", &pip_0, &b_pip_0);
-   fChain->SetBranchAddress("pip_1", &pip_1, &b_pip_1);
-   fChain->SetBranchAddress("beam", &beam, &b_beam);
-   fChain->SetBranchAddress("miss", &miss, &b_miss);
-   fChain->SetBranchAddress("ThreePi", &ThreePi, &b_ThreePi);
-   fChain->SetBranchAddress("TwoPiF", &TwoPiF, &b_TwoPiF);
-   fChain->SetBranchAddress("TwoPiS", &TwoPiS, &b_TwoPiS);
-   fChain->SetBranchAddress("t", &t, &b_ft);
+   fChain->SetBranchAddress("SigW", &SigW, &b_SigW);
+   fChain->SetBranchAddress("BckW", &BckW, &b_BckW);
    fChain->SetBranchAddress("fgID", &fgID, &b_fgID);
 }
 
-Bool_t ThreePiDecayApp::Notify()
+Bool_t MergeWeights::Notify()
 {
    // The Notify() function is called when a new file is opened. This
    // can be either for a new TTree in a TChain or when when a new TTree
@@ -117,22 +89,26 @@ Bool_t ThreePiDecayApp::Notify()
    // to the generated code, but the routine can be extended by the
    // user if needed. The return value is currently not used.
    THSOutput::HSNotify(fChain);
+   THSOutput::InitParent(fChain,"HSStep_2/HSStep_1");
+   fParent.Init(fParentTree);
   //If we want to clone the input tree we have to do it here as fChain does not exist in SlaveBegin on PROOF
   if(!fOutTree){//First file, clone the input tree and add branches
    Int_t buff=32000;
    Int_t split=0;//note split is important in the TSelector framework, if increased branches in subsequent selectors will be data members of the THSParticle object rather than the whole object (this can lead to name conflicts)
 
-    fOutTree=fChain->CloneTree(0);
-    fOutTree->SetDirectory(fFile);
+   fOutTree=fChain->CloneTree(0);
+   fOutTree->SetDirectory(fFile);
     //e.g. fp1=new TLorentzVector(); //should be declared as class data member
     //e.g. fOutTree->Branch("p1",&fp1,buff,split);
-    fTwoPiCM=new TLorentzVector();
-    fOnePiCM=new TLorentzVector();
-    fOutTree->Branch("TwoPiCM",&fTwoPiCM,buff,split);
-    fOutTree->Branch("OnePiCM",&fOnePiCM,buff,split);  }
+   fOutTree->Branch("beam",&(fParent.beam),buff,split);
+   fOutTree->Branch("ThreePi",&(fParent.ThreePi),buff,split);
+   fOutTree->Branch("TwoPiF",&(fParent.TwoPiF),buff,split);
+   fOutTree->Branch("TwoPiS",&(fParent.TwoPiS),buff,split);
+   fOutTree->Branch("miss",&(fParent.miss),buff,split);
+  }
   else {fChain->CopyAddresses(fOutTree);fOutTree->SetDirectory(fFile);}//reset the branch addresses of the cloned tree to the new file tree
 
-   return kTRUE;
+  return kTRUE;
 }
 
-#endif // #ifdef ThreePiDecayApp_cxx
+#endif // #ifdef MergeWeights_cxx

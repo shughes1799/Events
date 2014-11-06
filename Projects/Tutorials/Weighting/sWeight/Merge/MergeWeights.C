@@ -1,5 +1,5 @@
-#define ThreePiDecayApp_cxx
-// The class definition in ThreePiDecayApp.h has been generated automatically
+#define MergeWeights_cxx
+// The class definition in MergeWeights.h has been generated automatically
 // by the ROOT utility TTree::MakeSelector(). This class is derived
 // from the ROOT class TSelector. For more information on the TSelector
 // framework see $ROOTSYS/README/README.SELECTOR or the ROOT User Manual.
@@ -18,17 +18,17 @@
 //
 // To use this file, try the following session on your Tree T:
 //
-// Root > T->Process("ThreePiDecayApp.C")
-// Root > T->Process("ThreePiDecayApp.C","some options")
-// Root > T->Process("ThreePiDecayApp.C+")
+// Root > T->Process("MergeWeights.C")
+// Root > T->Process("MergeWeights.C","some options")
+// Root > T->Process("MergeWeights.C+")
 //
 
-#include "ThreePiDecayApp.h"
+#include "MergeWeights.h"
 #include <TH2.h>
 #include <TStyle.h>
 
 
-void ThreePiDecayApp::Begin(TTree * /*tree*/)
+void MergeWeights::Begin(TTree * /*tree*/)
 {
    THSOutput::HSBegin(fInput,fOutput);
    // The Begin() function is called at the start of the query.
@@ -39,7 +39,7 @@ void ThreePiDecayApp::Begin(TTree * /*tree*/)
 
 }
 
-void ThreePiDecayApp::SlaveBegin(TTree * /*tree*/)
+void MergeWeights::SlaveBegin(TTree * /*tree*/)
 {
    // The SlaveBegin() function is called after the Begin() function.
    // When running with PROOF SlaveBegin() is called on each slave server.
@@ -50,13 +50,16 @@ void ThreePiDecayApp::SlaveBegin(TTree * /*tree*/)
    THSOutput::HSSlaveBegin(fInput,fOutput);
 }
 
-Bool_t ThreePiDecayApp::Process(Long64_t entry)
+Bool_t MergeWeights::Process(Long64_t entry)
 {
    THSOutput::HSProcessStart(entry);
+//this selector has been configured to use a parent selector
+//get the branch with something like fParent.b_beam->GetEntry(entry)
+//then use the object like fParent.beam->P4().E();
    // The Process() function is called for each entry in the tree (or possibly
    // keyed object in the case of PROOF) to be processed. The entry argument
    // specifies which entry in the currently loaded tree is to be processed.
-   // It can be passed to either ThreePiDecayApp::GetEntry() or TBranch::GetEntry()
+   // It can be passed to either MergeWeights::GetEntry() or TBranch::GetEntry()
    // to read either all or the required parts of the data. When processing
    // keyed objects with PROOF, the object is already loaded and is available
    // via the fObject pointer.
@@ -71,23 +74,16 @@ Bool_t ThreePiDecayApp::Process(Long64_t entry)
    //
    // The return value is currently not used.
    GetEntry(entry); //lazy and slow, you can speed the code up by getting the branches you need to use instead
+   fParent.GetEntry(GetParentEntry(entry)); //lazy and slow, optimise your own analysis by only getting the branches you need
    //Ready to do some analysis here, before the Fill
-   //Get boost vector to three pi rest frame
-   TVector3 boost3pi=-ThreePi->BoostVector();
-   //Set the initial two pi 4-vector with the fast pi+ 
-   fTwoPiCM->SetVectM(TwoPiF->Vect(),TwoPiF->M());
-   //Set the initial one pi 4-vector as the slowest pi+ (pip_1 is a THSParticle, so get the 4 vector with ->P4()
-   fOnePiCM->SetVectM(pip_1->P4().Vect(),pip_1->P4().M());
-   //Boost to Three pi rest frame
-   fTwoPiCM->Boost(boost3pi);
-   fOnePiCM->Boost(boost3pi);
+   if(entry%1000==0)cout<<entry<<" "<<GetParentEntry(entry)<<" "<<fgID<<" "<<fParent.fgID<<endl;
    THSOutput::HSProcessFill(); 
 
 
    return kTRUE;
 }
 
-void ThreePiDecayApp::SlaveTerminate()
+void MergeWeights::SlaveTerminate()
 {
    THSOutput::HSSlaveTerminate();
    // The SlaveTerminate() function is called after all entries or objects
@@ -96,7 +92,7 @@ void ThreePiDecayApp::SlaveTerminate()
 
 }
 
-void ThreePiDecayApp::Terminate()
+void MergeWeights::Terminate()
 {
    THSOutput::HSTerminate();
    // The Terminate() function is the last function to be called during
