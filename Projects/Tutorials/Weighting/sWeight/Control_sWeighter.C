@@ -1,10 +1,10 @@
 {
   //Set up the input chain to be analysed
    TChain* tree=new TChain("Simple","datachain");
-   tree->Add("/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_11_14/Weighted/inp*root");
+   tree->Add("/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_11b_14/Weighted2/inp*root");
    //Set the ouput directory or file (if full file name is given just 1 file is created, while if a directory it will be created and filled with files of the same name as the input 
    gSystem->Setenv("HSOUT",
-		   "/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_11_14/Weighted/sWeights");
+		   "/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_11b_14/Weighted2/sWeights/");
    
    //Configure the analysis (i.e PROOF, source compilation...)
    TString HSANA=gSystem->Getenv("HSANA");

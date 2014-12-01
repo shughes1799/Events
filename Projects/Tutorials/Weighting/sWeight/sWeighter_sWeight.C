@@ -77,7 +77,7 @@ TFile* outPlots=new TFile("sPlots_11_14.root","recreate"); //File to write sPlot
 void sWeighter_sWeight(){
   //Set up the input chain to be analysed
    TChain* tree=new TChain("Simple","datachain");
-   tree->Add("/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_11_14/Weighted/inp*root");
+   tree->Add("/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_11b_14/Weighted/inp*root");
 
    //Do fitting
    //with no kinematic bins
@@ -217,17 +217,19 @@ Bool_t AddData(RooWorkspace* ws, TTree* schain){
   // Make tree in to RooDataSet
   // Declare tree branches as RooRealVars
   RooRealVar Mm("Mmiss","Mmiss",0.8,1.07) ;
+ //Event ID number....note the max number of events is implied 1E12
+  RooRealVar ID("fgID","fgID",0,1E12);
   if( schain->GetEntryList()) {
     //If there is an entry list give a unique name to the datset
     //Here I am only actually going to add the varibale ML to the dataset
-    RooDataSet data(dataSetName=TString(schain->GetEntryList()->GetName())+"DS","Total data",RooArgSet(Mm),Import(*cop));
+    RooDataSet data(dataSetName=TString(schain->GetEntryList()->GetName())+"DS","Total data",RooArgSet(Mm,ID),Import(*cop));
     cout<<"Import data to workspace"<<endl;
     // import data into workspace
     ws->import(data);
   }
   else{
     
-    RooDataSet data(dataSetName,"Total data",RooArgSet(Mm),Import(*cop));
+    RooDataSet data(dataSetName,"Total data",RooArgSet(Mm,ID),Import(*cop));
     cout<<"Import data to workspace"<<endl;
     // import data into workspace
     ws->import(data);

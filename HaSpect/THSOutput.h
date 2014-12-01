@@ -49,6 +49,7 @@ class THSOutput : public THSHisto{
   Long64_t fEntry; //current entry number in Chain
   vector<Int_t> fFinalState; //vector holding the particle ids selected in final state
   vector<UInt_t> fNtype; //vector holding the number of different particles in fFinalState
+  vector<UInt_t> fIDtype; //vector holding the PDG_ID of different particles in fFinalState
   UInt_t fNdet; //number of particles detected (the size of fFinalState)
   vector<Int_t> fDetID;
   vector<THSParticle*> fDetParticle;
@@ -68,7 +69,7 @@ class THSOutput : public THSHisto{
   virtual void FinishOutput();
   //virtual void NextFile(TTree* chain);  //call function when switch files in chain
   virtual void InitOutFile(TTree* chain);
-  // virtual void NotifyOutput(TTree* tree,TList* output);
+  void InitOutTree();
   void PrepareOutDir(); //create output file directory
   Int_t CountChar(TString tests,char testc);
   void CopyCode(TDirectory* curDir=0,TDirectory* prevDir=0);  //Give new file,curDir to copy to, and and previous analysis steps, prevDir

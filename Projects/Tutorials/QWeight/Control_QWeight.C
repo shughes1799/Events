@@ -1,19 +1,20 @@
 {
   //Set up the input chain to be analysed
    TChain* tree=new TChain("HSParticles","datachain");
-   tree->Add("/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HSID/inp1*root");
-   //Make a chain of the previously saved  NN trees for quick Qweigthing
+   tree->Add("/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_11b_14/inp1*root");
+   tree->Add("/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_11b_14/inp2*root");
+   //Load a chain of the previously saved  NN trees for quick Qweigthing
    //The input files should match the files in tree
    //TChain* treeNN=new TChain("TreeOfNNTrees","datachain");
    //treeNN->Add("/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HSID/Qval/inp1*root");
    //Set the ouput directory or file (if full file name is given just 1 file is created, while if a directory it will be created and filled with files of the same name as the input 
    gSystem->Setenv("HSOUT",
-		   "/home/dglazier/Work/Research/HaSpect/data/test2");
+		   "/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_11b_14/Qvalue");
    
    //Configure the analysis (i.e PROOF, source compilation...)
    TString HSANA=gSystem->Getenv("HSANA");
    gROOT->LoadMacro(HSANA+"/HSControl.C");
-   TProof* prf=HSControl(kFALSE); //where the proof stuff is set, kTRUE means use PROOF
+   TProof* prf=HSControl(kTRUE); //where the proof stuff is set, kTRUE means use PROOF
    
    //Use an event list from a previous analysis 
    //If only 1 file was output the event list will be in its top directory, so just give the file name
@@ -27,6 +28,9 @@
     //Give the chain of NN trees to the input list id using LoadNNTree
    // prf->AddInput(new TNamed("NNChainLoad",treeNN->GetName()));
     //prf->AddInput(treeNN);
+    //Give the name of the file and histogram containing the kinematic bins
+   // prf->AddInput(new TNamed("NNKinBins",KINBINFILENAME));
+   // prf->AddInput(new TNamed("NNKinBinsHis",KINBINFILENAME));
     tree->Process("QWeight.C++");
    }
   else{ //we have to look after the input list
@@ -38,7 +42,10 @@
      inList->Add(tree->Clone());
     //Give the chain of NN trees to the input list
     //inList->Add(new TNamed("NNChainLoad",treeNN->GetName()));
-     // inList->Add(treeNN);
+    //inList->Add(treeNN);
+    //Give the name of the file and histogram containing the kinematic bins
+   // inList->Add(new TNamed("NNKinBins",KINBINFILENAME));
+   // inList->Add(new TNamed("NNKinBinsHis",KINBINFILENAME));
      nnsel->SetInputList(inList);
      Long64_t first=0;
      tree->LoadTree(first); //This is done in TChain::Process(filename) but not Process(selector)!! 

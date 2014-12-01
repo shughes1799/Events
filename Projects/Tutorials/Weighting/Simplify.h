@@ -121,7 +121,8 @@ Bool_t Simplify::Notify()
    // to the generated code, but the routine can be extended by the
    // user if needed. The return value is currently not used.
    THSOutput::HSNotify(fChain);
-
+   THSOutput::InitOutTree();
+ 
    return kTRUE;
 }
 

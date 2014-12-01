@@ -103,17 +103,7 @@ Bool_t sWeighter::Process(Long64_t entry)
    // The return value is currently not used.
    GetEntry(entry); //lazy and slow, you can speed the code up by getting the branches you need to use instead
    //Ready to do some analysis here, before the Fill
-   if(fSWKinBins)SetsPlot(0,0,0); //get the SW bin for this event, need to replace 0s by real variable...,
-   else SetsPlot(0);
-   if(fCurrSW->GetSDataSet()->get(fSEntry[fSWBin])->getRealValue("Mmiss")!=Mmiss) return kTRUE;
-   //  cout<<fCurrSW->GetSDataSet()->get(fSEntry[fSWBin])->getRealValue("Mmiss")<<" "<<Mmiss<<endl;
-   if(fCurrSW){
-      fSigW=fCurrSW->GetSWeight(fSEntry[fSWBin],"SigYield") ;//SigYield is name given in THS_sWeight
-       fBckW=fCurrSW->GetSWeight(fSEntry[fSWBin],"BckYield") ;
-       fSEntry[fSWBin]++;
-   }
-   else{
-       fSigW=0;fBckW=0;}
+   if(!GetsWeight()) return kTRUE; //check if this event is in the sPlot
    
    //Int_t kinBin=GetKinBin();//if fHisbins is defined need to give this meaningful arguments
    //FillHistograms("Cut1",kinBin);
@@ -184,4 +174,26 @@ void sWeighter::FillHistograms(TString sCut,Int_t bin){
     FindHist("M2piSgt1"+sLabel)->Fill(M2pis);
     FindHist("M3pigt1"+sLabel)->Fill(M3pi);
   }
+}
+
+Bool_t sWeighter::GetsWeight(){
+  //Function to get the correct sPlot
+  //Then find the sWeights for this event
+   if(fSWKinBins)SetsPlot(0,0,0); //get the SW bin for this event, need to replace 0s by real variable...,
+   else SetsPlot(0);//not using kin bins, just 1 sPlot
+   // The next 2 lines are required to check synchronisation with parent tree
+   // This allows for filtering events while performing the sWeight fit
+   // The events output from this selector will all have been included in the fit
+    if(fCurrSW->GetSDataSet()->get(fSEntry[fSWBin]))
+     if((Int_t)(fCurrSW->GetSDataSet()->get(fSEntry[fSWBin])->getRealValue("fgID"))!=fgID) return kFALSE; //this event is not in the sPlot
+   //Now get the weights, by default assume signal and background types only
+   if(fCurrSW&&fCurrSW->GetSDataSet()->get(fSEntry[fSWBin])){
+     fSigW=fCurrSW->GetSWeight(fSEntry[fSWBin],"SigYield") ;//SigYield is name given in THS_sWeight
+     fBckW=fCurrSW->GetSWeight(fSEntry[fSWBin],"BckYield") ;
+     fSEntry[fSWBin]++; //increment the sWeight counter for this kinematic bin
+   }
+   else{
+     fSigW=0;fBckW=0;}
+
+   return kTRUE;//got a weight
 }

@@ -78,9 +78,9 @@ void THSOutput::HSNotify(TTree* tree){
   //Function that looks after the output file
   //Needs to be called in TSelector::Notify()
   fCurTree=tree;
-  if(fEntryList)fEntryList->SetTree(tree);//This seems to be required in the case of running tree->Process(TSelector) but not tree->Process(Filename), it is not clear why this should be different but this line does not seem to cause problems for the latter case...
+  if(fEntryList)fEntryList->SetTree(fCurTree);//This seems to be required in the case of running tree->Process(TSelector) but not tree->Process(Filename), it is not clear why this should be different but this line does not seem to cause problems for the latter case...
   //Check if gID exists in current tree, if not will start saving it now
-  if(!tree->GetBranch("fgID")) fSaveID=kTRUE;
+  if(!fCurTree->GetBranch("fgID")) fSaveID=kTRUE;
   if(fOutName.EndsWith(".root")){
     //Only want to do some things once when writing 1 file only
      if(fStepName.Length()==0){
@@ -173,13 +173,13 @@ void THSOutput::HSTerminate(){
     TProofOutputFile* elpofile=0;
     TObject* outo=0;
     TEntryList* elist=dynamic_cast<TEntryList*>(fSelOutput->FindObject("HSelist")); //must use the eventlist merged in output list
- 
     //now iterate over output file and write a copy of their event list
     //the event list for each tree is retireved from el
     TFile* infile=0; //pointer to input file
     while((outo=dynamic_cast<TObject*>(next()))){
       if((elpofile=dynamic_cast<TProofOutputFile*>(outo))){
 	TFile* elfile = elpofile->OpenFile("UPDATE");
+	cout<<elfile->GetName()<<endl;
 	//First sort tree to regain original ordering
 	if(gProof){
 	  TIter fnext(elfile->GetListOfKeys());
@@ -222,9 +222,11 @@ void THSOutput::HSTerminate(){
 	delete elfile;
       }
     }
-    infile->Close();
-    delete infile;
-
+    cout<<"Infile "<<infile<<endl;
+    if(infile) {
+      infile->Close();
+      delete infile;
+    }
     //Save the overall event list in a new file in output directory
     TFile* allel=new TFile(fOutName+"/ParentEventList.root","recreate");
     elist->Write();
@@ -264,6 +266,7 @@ void THSOutput::InitOutput(){
    UInt_t Nbranches=0;
    vipart=0;
    for(UInt_t itype=0;itype<fNtype.size();itype++){//loop over types of particles
+     fIDtype.push_back(fFinalState[Nbranches]);//get the pdg id of this type
      for(UInt_t intype=0;intype<fNtype[itype];intype++){//loop over particles of same type
        //create particles, note the vector will look after deleting these when it goes out of scope
        fDetParticle.push_back(new THSParticle(fFinalState[Nbranches]));
@@ -417,7 +420,7 @@ void THSOutput::InitOutFile(TTree* chain){
    TString ofname;
   if(fOutName.EndsWith(".root")) ofname=fOutName;
   else  {
-    ofname =gSystem->BaseName((chain->GetCurrentFile()->GetName()));
+    ofname =gSystem->BaseName((fCurTree->GetCurrentFile()->GetName()));
     ofname.Prepend(fOutName+"/");
   }
   cout<<"InitOut "<<ofname<<endl;
@@ -437,17 +440,21 @@ void THSOutput::InitOutFile(TTree* chain){
      return;
    }
    //if it exists give the tree to the file
-   if(fOutTree){
+   
+   gDirectory = savedir;
+
+}
+void THSOutput::InitOutTree(){
+  //Function to set tree file and make sure fgID branch exists
+  //used to be part of InitOutTree but split because needs to be called after fOutTree create
+   if(fOutTree&&fFile){
      fOutTree->SetDirectory(fFile);
      fOutTree->AutoSave();
      //cout<<fOutTree->GetBranch("fgID")<<fSaveID<<endl;
      if(!fOutTree->GetBranch("fgID"))fOutTree->Branch("fgID", &fgID, "fgID/I");
      if(!fSaveID)//copy existing global ID
-       fOutTree->SetBranchAddress("fgID",chain->GetBranch("fgID")->GetAddress());
+       fOutTree->SetBranchAddress("fgID",fCurTree->GetBranch("fgID")->GetAddress());
    }
-   
-   gDirectory = savedir;
-
 }
 void THSOutput::CopyCode(TDirectory* curDir,TDirectory* prevDir){
 
@@ -487,9 +494,8 @@ void THSOutput::CopyCode(TDirectory* curDir,TDirectory* prevDir){
   
   //If there was a previous step copy its source to the new step list
   if(prevStep) fStepDir->Add(CopyDirtoList(prevStep));
-  
   //Write the source code to the output file curDir
-  curDir->cd();
+  // curDir->cd();
   // WriteListtoFile(fStepDir);
   savedir->cd();
 
@@ -526,12 +532,13 @@ void THSOutput::ImportSysDirtoList(const char *dirname,TList* list) {
   
     } else {
       if (flags != 3)                     continue; //must be a directory
-      //we have found a valid sub-directory. Process it
-      TList* list1=new TList(); //create new sublist
-      list1->SetName(afile);
-      list1->SetOwner();
-      ImportSysDirtoList(afile,list1); //write the sub directory to the sublist
-      list->Add(list1); //add sub list
+ 	//*************remove copying of lower level directories
+       //we have found a valid sub-directory. Process it
+      // TList* list1=new TList(); //create new sublist
+      // list1->SetName(afile);
+      // list1->SetOwner();
+      // ImportSysDirtoList(afile,list1); //write the sub directory to the sublist
+      // list->Add(list1); //add sub list
     }
   }
   gSystem->FreeDirectory(dirp);
@@ -547,14 +554,14 @@ TList* THSOutput::CopyDirtoList(TDirectory *source) {
   list->SetOwner();
   TDirectory *savdir = gDirectory;
   //loop on all entries of this directory
-  TKey *key;
+  TKey *key=0;
   TIter nextkey(source->GetListOfKeys());
   while ((key = (TKey*)nextkey())) {
       const char *classname = key->GetClassName();
       TClass *cl = gROOT->GetClass(classname);
       if (!cl) continue;
       if (cl->InheritsFrom(TDirectory::Class())) {
-         source->cd(key->GetName());
+       source->cd(key->GetName());
          TDirectory *subdir = gDirectory;
          list->Add(CopyDirtoList(subdir));
       } else if (cl->InheritsFrom(TTree::Class())) {
@@ -585,9 +592,10 @@ void THSOutput::WriteListtoFile(TList* list0){
       TList* list1=(TList*)list0->FindObject(key->GetName());
       WriteListtoFile(list1); //write sublist to a subdirectory
     } 
+    //write the objects in this list
+    else key->Write(0, TObject::kOverwrite);
   }
-  //write the objects in this list
-  list0->Write(0, TObject::kOverwrite);
+  // list0->Write(0, TObject::kOverwrite);
   //back to original file directory
   saveDir->cd();
 }

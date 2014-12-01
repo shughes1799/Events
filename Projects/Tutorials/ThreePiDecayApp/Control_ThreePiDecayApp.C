@@ -1,15 +1,15 @@
 {
   //Set up the input chain to be analysed
    TChain* tree=new TChain("HSParticles","datachain");
-   tree->Add("/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HSID/inp*root");
+   tree->Add("/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_11b_14/inp*root");
    //Set the ouput directory or file (if full file name is given just 1 file is created, while if a directory it will be created and filled with files of the same name as the input 
    gSystem->Setenv("HSOUT",
-		   "/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HSID/DecayApp");
+		   "/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_11b_14/App");
    
    //Configure the analysis (i.e PROOF, source compilation...)
    TString HSANA=gSystem->Getenv("HSANA");
    gROOT->LoadMacro(HSANA+"/HSControl.C");
-   TProof* prf=HSControl(kTRUE); //where the proof stuff is set, kTRUE means use PROOF
+   TProof* prf=HSControl(kFALSE); //where the proof stuff is set, kTRUE means use PROOF
    
    //Use an event list from a previous analysis 
    //If only 1 file was output the event list will be in its top directory, so just give the file name

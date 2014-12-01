@@ -401,13 +401,14 @@ void HSit_h(){
     lines->AddAt(new TObjString("   Int_t split=0;//note split is important in the TSelector framework, if increased branches in subsequent selectors will be data members of the THSParticle object rather than the whole object (this can lead to name conflicts)
 "),place+4); 
     lines->AddAt(new TObjString("    fOutTree=fChain->CloneTree(0);"),place+5);
-    lines->AddAt(new TObjString("    fOutTree->SetDirectory(fFile);"),place+6);
-    lines->AddAt(new TObjString("    //e.g. fp1=new TLorentzVector(); //should be declared as class data member"),place+7);
+    //lines->AddAt(new TObjString("    fOutTree->SetDirectory(fFile);"),place+6);
+    lines->AddAt(new TObjString("    //e.g. fp1=new TLorentzVector(); //should be declared as class data member"),place+6);
  
-    lines->AddAt(new TObjString("    //e.g. fOutTree->Branch(\"p1\",&fp1,buff,split);"),place+8); 
-    lines->AddAt(new TObjString("  }"),place+9); 
-    lines->AddAt(new TObjString("  else {fChain->CopyAddresses(fOutTree);fOutTree->SetDirectory(fFile);}//reset the branch addresses of the cloned tree to the new file tree"),place+10); 
-    
+    lines->AddAt(new TObjString("    //e.g. fOutTree->Branch(\"p1\",&fp1,buff,split);"),place+7); 
+    lines->AddAt(new TObjString("  }"),place+8); 
+    lines->AddAt(new TObjString("  else {fChain->CopyAddresses(fOutTree);}//reset the branch addresses of the cloned tree to the new file tree"),place+9); 
+    lines->AddAt(new TObjString("  THSOutput::InitOutTree();"),place+10); 
+
     //Put in an example data member
     obj=macro.GetLineWith( "// List of branches");
     place=lines->IndexOf(obj); //get line number
@@ -424,7 +425,10 @@ void HSit_h(){
     lines->AddAt(new TObjString("  //you must define how they are processed for each event"),place); 
     lines->AddAt(new TObjString("  //e.g.   TLorentzVector  *fp1;"),place+1); 
 
-
+   obj=macro.GetLineWith( "THSOutput::HSNotify(fChain);");
+   place=lines->IndexOf(obj); //get line number
+   lines->AddAt(new TObjString("  THSOutput::InitOutTree();"),place+1); 
+ 
  }
  if(IsQval){
    //headre file
@@ -497,6 +501,7 @@ void UseSWeight(){
   lines->AddAt(new TObjString("   TH1* fSWKinBins;//Histogram defining kinematic bins (if used) for sPlots"),place++); 
   lines->AddAt(new TObjString("   Int_t fSWBin; //ID for current SPlot kinematic bin"),place++); 
   lines->AddAt(new TObjString("   void SetsPlot(Float_t ev1,Float_t ev2=0,Float_t ev3=0); //Function to find the sPlot for the event"),place++); 
+  lines->AddAt(new TObjString("   Bool_t GetsWeight(); //function which asigns the weight for this event from sPlot object"),place++); 
    //header info
   obj=macroH.GetLineWith( "#include \"THSOutput.h\"");
   place=lines->IndexOf(obj)+1; //get line number   
@@ -563,17 +568,43 @@ void UseSWeight(){
   lines->AddAt(new TObjString("   fSWBin=0;"),place++); 
 
   //Process, get the sWEights from the sPlots
+
   obj=macroC.GetLineWith( "//Ready to do some analysis here, before the Fill");
-  place=lines->IndexOf(obj)+1; //get line number  
-  lines->AddAt(new TObjString("   if(fSWKinBins)SetsPlot(0,0,0); //get the SW bin for this event, need to replace 0s by real variable...,"),place++); 
-  lines->AddAt(new TObjString("   else SetsPlot(0);"),place++); 
-  lines->AddAt(new TObjString("   if(fCurrSW){"),place++); 
-  lines->AddAt(new TObjString("      fSigW=fCurrSW->GetSWeight(fSEntry[fSWBin],\"SigYield\") ;//SigYield is name given in THS_sWeight"),place++); 
-  lines->AddAt(new TObjString("       fBckW=fCurrSW->GetSWeight(fSEntry[fSWBin],\"BckYield\") ;"),place++); 
-  lines->AddAt(new TObjString("       fSEntry[fSWBin]++;"),place++); 
-  lines->AddAt(new TObjString("   }"),place++); 
-  lines->AddAt(new TObjString("   else{"),place++); 
-  lines->AddAt(new TObjString("       fSigW=0;fBckW=0;}"),place++); 
+  place=lines->IndexOf(obj)+1; //get line number 
+  lines->AddAt(new TObjString("   if(!GetsWeight()) return kTRUE; //check if this event is in the sPlot"),place++);
+  // lines->AddAt(new TObjString("   if(fSWKinBins)SetsPlot(0,0,0); //get the SW bin for this event, need to replace 0s by real variable...,"),place++); 
+  // lines->AddAt(new TObjString("   else SetsPlot(0);"),place++); 
+  // lines->AddAt(new TObjString("   if(fCurrSW){"),place++); 
+  // lines->AddAt(new TObjString("      fSigW=fCurrSW->GetSWeight(fSEntry[fSWBin],\"SigYield\") ;//SigYield is name given in THS_sWeight"),place++); 
+  // lines->AddAt(new TObjString("       fBckW=fCurrSW->GetSWeight(fSEntry[fSWBin],\"BckYield\") ;"),place++); 
+  // lines->AddAt(new TObjString("       fSEntry[fSWBin]++;"),place++); 
+  // lines->AddAt(new TObjString("   }"),place++); 
+  // lines->AddAt(new TObjString("   else{"),place++); 
+  // lines->AddAt(new TObjString("       fSigW=0;fBckW=0;}"),place++); 
+  
+  //Define the funciton GetsWEight
+  lines->Add(new TObjString(TString("Bool_t ")+SelName+"::GetsWeight(){"));
+  lines->Add(new TObjString("  //Function to get the correct sPlot"));
+  lines->Add(new TObjString("  //Then find the sWeights for this event"));
+  lines->Add(new TObjString("   if(fSWKinBins)SetsPlot(0,0,0); //get the SW bin for this event, need to replace 0s by real variable...,"));
+  lines->Add(new TObjString("   else SetsPlot(0);//not using kin bins, just 1 sPlot"));
+   lines->Add(new TObjString("   // The next 2 lines are required to check synchronisation with parent tree"));
+  lines->Add(new TObjString("   // This allows for filtering events while performing the sWeight fit"));
+  lines->Add(new TObjString("   // The events output from this selector will all have been included in the fit"));
+  lines->Add(new TObjString("   if(fCurrSW->GetSDataSet()->get(fSEntry[fSWBin]))"));
+  lines->Add(new TObjString("     if((Int_t)(fCurrSW->GetSDataSet()->get(fSEntry[fSWBin])->getRealValue(\"fgID\"))!=fgID) return kFALSE; //this event is not in the sPlot"));
+  lines->Add(new TObjString("   //Now get the weights, by default assume signal and background types only"));
+  lines->Add(new TObjString("   if(fCurrSW&&fCurrSW->GetSDataSet()->get(fSEntry[fSWBin])){"));
+  lines->Add(new TObjString("     fSigW=fCurrSW->GetSWeight(fSEntry[fSWBin],\"SigYield\") ;//SigYield is name given in THS_sWeight"));
+  lines->Add(new TObjString("     fBckW=fCurrSW->GetSWeight(fSEntry[fSWBin],\"BckYield\") ;"));
+  lines->Add(new TObjString("     fSEntry[fSWBin]++; //increment the sWeight counter for this kinematic bin"));
+  lines->Add(new TObjString("   }"));
+  lines->Add(new TObjString("   else{"));
+  lines->Add(new TObjString("     fSigW=0;fBckW=0;}"));
+  lines->Add(new TObjString("   return kTRUE;//got a weight"));
+  lines->Add(new TObjString("   }"));
+
+////////////end GetsWeight function
 
   //Slave Terminate, close the file
   obj=macroC.GetLineWith( "THSOutput::HSSlaveTerminate();");

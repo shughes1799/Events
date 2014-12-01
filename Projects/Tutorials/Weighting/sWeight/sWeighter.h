@@ -1,8 +1,8 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Wed Nov  5 11:44:11 2014 by ROOT version 5.34/14
+// Wed Nov 26 14:36:51 2014 by ROOT version 5.34/14
 // from TTree Simple/A tree containing reconstructed variables
-// found on file: /home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HSID2/Weighted/inp1_50.root
+// found on file: /home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_11b_14/Weighted/inp1_50.root
 //////////////////////////////////////////////////////////
 
 #ifndef sWeighter_h
@@ -73,6 +73,7 @@ public :
    TH1* fSWKinBins;//Histogram defining kinematic bins (if used) for sPlots
    Int_t fSWBin; //ID for current SPlot kinematic bin
    void SetsPlot(Float_t ev1,Float_t ev2=0,Float_t ev3=0); //Function to find the sPlot for the event
+   Bool_t GetsWeight(); //function which asigns the weight for this event from sPlot object
 //Add THSHisto functions
    virtual void HistogramList(TString sLabel);
    virtual void FillHistograms(TString sCut,Int_t bin);
@@ -109,12 +110,13 @@ void sWeighter::Init(TTree *tree)
 
 Bool_t sWeighter::Notify()
 {
-   // The Notify() function is called when a new file is opened. This
-   // can be either for a new TTree in a TChain or when when a new TTree
-   // is started when using PROOF. It is normally not necessary to make changes
-   // to the generated code, but the routine can be extended by the
-   // user if needed. The return value is currently not used.
-   THSOutput::HSNotify(fChain);
+  // The Notify() function is called when a new file is opened. This
+  // can be either for a new TTree in a TChain or when when a new TTree
+  // is started when using PROOF. It is normally not necessary to make changes
+  // to the generated code, but the routine can be extended by the
+  // user if needed. The return value is currently not used.
+  THSOutput::HSNotify(fChain);
+  THSOutput::InitOutTree();
 
    return kTRUE;
 }

@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Thu Nov  6 16:27:12 2014 by ROOT version 5.34/14
+// Wed Nov 26 11:35:05 2014 by ROOT version 5.34/14
 // from TTree HSParticles/A tree containing reconstructed particles
 // found on file: /home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HSID/inp1_50.root
 //////////////////////////////////////////////////////////
@@ -39,6 +39,7 @@ public :
   //e.g.   TLorentzVector  *fp1;
    TLorentzVector  *fTwoPiCM;
    TLorentzVector  *fOnePiCM;
+
    // List of branches
    TBranch        *b_pim_0;   //!
    TBranch        *b_pip_0;   //!
@@ -52,7 +53,7 @@ public :
    TBranch        *b_fgID;   //!
 
    ThreePiDecayApp(TTree * /*tree*/ =0) : fChain(0) { }
-   virtual ~ThreePiDecayApp() {SafeDelete(fTwoPiCM);SafeDelete(fOnePiCM); }
+   virtual ~ThreePiDecayApp() { }
    virtual Int_t   Version() const { return 2; }
    virtual void    Begin(TTree *tree);
    virtual void    SlaveBegin(TTree *tree);
@@ -123,14 +124,15 @@ Bool_t ThreePiDecayApp::Notify()
    Int_t split=0;//note split is important in the TSelector framework, if increased branches in subsequent selectors will be data members of the THSParticle object rather than the whole object (this can lead to name conflicts)
 
     fOutTree=fChain->CloneTree(0);
-    fOutTree->SetDirectory(fFile);
     //e.g. fp1=new TLorentzVector(); //should be declared as class data member
     //e.g. fOutTree->Branch("p1",&fp1,buff,split);
     fTwoPiCM=new TLorentzVector();
     fOnePiCM=new TLorentzVector();
     fOutTree->Branch("TwoPiCM",&fTwoPiCM,buff,split);
-    fOutTree->Branch("OnePiCM",&fOnePiCM,buff,split);  }
-  else {fChain->CopyAddresses(fOutTree);fOutTree->SetDirectory(fFile);}//reset the branch addresses of the cloned tree to the new file tree
+    fOutTree->Branch("OnePiCM",&fOnePiCM,buff,split);  
+  }
+  else {fChain->CopyAddresses(fOutTree);}//reset the branch addresses of the cloned tree to the new file tree
+  THSOutput::InitOutTree();
 
    return kTRUE;
 }

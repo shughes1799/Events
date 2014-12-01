@@ -1,3 +1,4 @@
+
 #define QWeight_cxx
 // The class definition in QWeight.h has been generated automatically
 // by the ROOT utility TTree::MakeSelector(). This class is derived
@@ -51,7 +52,7 @@ void QWeight::SlaveBegin(TTree * /*tree*/)
 // Event Weighting initialisation
    fNcoord=2;//Need to set the correct number of varibles in distance calc.
    fNdisc=1;//Need to set the correct number of varibles signal/back fit
-   fIsPlot=kTRUE;    //Show the fit to the nearest neigbours
+   fIsPlot=kFALSE;    //Show the fit to the nearest neigbours
    fIsSaveNN=kFALSE; //Save all the nearest nieghbours tree
    fIsLoadNN=kFALSE; //Load previously save nearest neigbours trees
    InitNN(fInput);

@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Mon Jul 21 11:08:31 2014 by ROOT version 5.34/14
+// Wed Nov 26 11:31:44 2014 by ROOT version 5.34/14
 // from TTree HSParticles/A tree containing reconstructed particles
 // found on file: /home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HSID/inp2_50.root
 //////////////////////////////////////////////////////////
@@ -52,9 +52,8 @@ public :
    TBranch        *b_ft;   //!
    TBranch        *b_fgID;   //!
 
-   ThreePiDecay(TTree * /*tree*/ =0) : fChain(0) { }
-   virtual ~ThreePiDecay() { SafeDelete(fTwoPiCM);SafeDelete(fOnePiCM);}
-
+ ThreePiDecay(TTree * /*tree*/ =0) : fChain(0),fTwoPiCM(0),fOnePiCM(0) { }
+   virtual ~ThreePiDecay() { SafeDelete(fTwoPiCM);SafeDelete(fOnePiCM); }
    virtual Int_t   Version() const { return 2; }
    virtual void    Begin(TTree *tree);
    virtual void    SlaveBegin(TTree *tree);
@@ -119,6 +118,7 @@ Bool_t ThreePiDecay::Notify()
    // to the generated code, but the routine can be extended by the
    // user if needed. The return value is currently not used.
    THSOutput::HSNotify(fChain);
+   THSOutput::InitOutTree();
 
    return kTRUE;
 }

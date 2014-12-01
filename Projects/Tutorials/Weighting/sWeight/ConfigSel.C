@@ -11,9 +11,9 @@
  IsQval=kFALSE;   //Use Qvalue event weighting algorithm
  IsSW=kTRUE;   //Use sWeights event weighting algorithm
 
- FileName="/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HSID2/Weighted/inp1_50.root";   // The input filename containing the tree
+ FileName="/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_11b_14/Weighted/inp1_50.root";   // The input filename containing the tree
  TreeName="Simple";   // The name of the tree
- OutName="/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HSID2/Weighted/sWeights";   // The name of the output directory or file
+ OutName="/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_11b_14/Weighted/sWeights";   // The name of the output directory or file
  SelName="sWeighter";    // The name of the selector to be produced
 
  // IsParent=kTRUE; //use connection with parent tree

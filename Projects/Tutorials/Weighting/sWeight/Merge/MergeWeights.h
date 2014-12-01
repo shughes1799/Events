@@ -97,7 +97,6 @@ Bool_t MergeWeights::Notify()
    Int_t split=0;//note split is important in the TSelector framework, if increased branches in subsequent selectors will be data members of the THSParticle object rather than the whole object (this can lead to name conflicts)
 
    fOutTree=fChain->CloneTree(0);
-   fOutTree->SetDirectory(fFile);
     //e.g. fp1=new TLorentzVector(); //should be declared as class data member
     //e.g. fOutTree->Branch("p1",&fp1,buff,split);
    fOutTree->Branch("beam",&(fParent.beam),buff,split);
@@ -106,8 +105,8 @@ Bool_t MergeWeights::Notify()
    fOutTree->Branch("TwoPiS",&(fParent.TwoPiS),buff,split);
    fOutTree->Branch("miss",&(fParent.miss),buff,split);
   }
-  else {fChain->CopyAddresses(fOutTree);fOutTree->SetDirectory(fFile);}//reset the branch addresses of the cloned tree to the new file tree
-
+  else {fChain->CopyAddresses(fOutTree);}//reset the branch addresses of the cloned tree to the new file tree
+  THSOutput::InitOutTree();
   return kTRUE;
 }
 

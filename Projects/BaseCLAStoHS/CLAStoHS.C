@@ -159,8 +159,67 @@ Bool_t CLAStoHS::IsGoodEventGhosts(){
   if(!(std::equal(EventState.begin(),EventState.end(),fFinalState.begin()))) return kFALSE; // return if IDs are not those requested
   else return kTRUE; //it is a good event
 }
+Bool_t CLAStoHS::IsGoodEventGhostsInclusive(){
+  //this algorithm uses std::vec to compare the particle ids of the event
+  //and those defined in fFinalState, event is good if they match
+
+  //only get branches used
+  b_gpart->GetEntry(fEntry);
+  //  if(gpart!=(Int_t)fNdet) return kFALSE;//only analyse event with correct final state
+  //Check the tracking status is OK for all tracks (Must need to apply an efficiency correction for this perhaps MC already does)
+  b_stat->GetEntry(fEntry);
+  // for(UInt_t istat=0;istat<fNdet;istat++) if(stat[istat]<1) return kFALSE;
+
+  b_id->GetEntry(fEntry); //particle id branch
+  //store the particle IDs in vector to compare with fFinalState
+  vector<Int_t>EventState;
+  Int_t nreal=0;
+  for(UInt_t ifs=0;ifs<gpart;ifs++) {
+    if(stat[ifs]>0) {
+      //check if this particle is included in final state
+	EventState.push_back(id[ifs]);
+	nreal++;
+    }
+  }
+  // if(nreal!=(Int_t)fNdet) return kFALSE;//only analyse event with correct final state
+  //put in order for comparison with requested fFinalState
+  std::sort(EventState.begin(),EventState.begin()+nreal);
+
+  for(UInt_t  itype=0;itype<fNtype.size();itype++){//loop over requested types
+    //check to see if we have enough of this type
+    if(std::count(EventState.begin(),EventState.end(),fIDtype[itype])<fNtype[itype])
+      return kFALSE; //note enough of this type exiting event
+
+  //now compare with the particles defined in fFinalState 
+    // if(!(std::equal(EventState.begin(),EventState.end(),fFinalState.begin()))) return kFALSE; // return if IDs are not those requested
+  else return kTRUE; //it is a good event
+}
 
 void CLAStoHS::MakeDetected(){
+ //this function controls the interfaciing of the reconstructed data to THSParticles
+  Int_t iIDall[gpart]; //array containing order of particle IDs in id array for all tracks (incl ghosts) 
+  Int_t iID[fNdet]; //array containing order of particle IDs in id array for "real" tracks
+  TMath::Sort((Int_t)gpart,id,iIDall,kFALSE); //order the array in asscending order(kFALSE), e.g. -211,211,211
+  //write only the indexes of the real tracks to the ID array
+  UInt_t Ndet=0;
+  for(Int_t ireal=0;ireal<gpart;ireal++) if(stat[ireal]>0)iID[Ndet++]=iIDall[ireal];
+  //the ordering in iID[] should now match fFinalState and fEventSate
+  //loop over different particle types
+  Ndet=0;
+  for(UInt_t itype=0;itype<fNtype.size();itype++){ 
+      if(fNtype[itype]==1)MakeParticle(fDetParticle[Ndet],iID[Ndet]); 
+     else{//order particles of same type fastest first
+      //get an array with the momentum of particles of this type
+      Double_t typemom[fNtype[itype]];
+      Int_t imom[fNtype[itype]];
+      for(UInt_t intype=0;intype<fNtype[itype];intype++) typemom[intype]=p[iID[Ndet+intype]];
+      TMath::Sort((Int_t)fNtype[itype],typemom,imom,kTRUE); //order the array in decreasing order(kTRUE)
+      for(UInt_t intype=0;intype<fNtype[itype];intype++) MakeParticle(fDetParticle[Ndet+intype],iID[Ndet+imom[intype]]);  //function which maps the original variables into THSParticle 
+     }
+     Ndet+=fNtype[itype];//move on to the next particle type
+  }//end itype loop
+}
+void CLAStoHS::MakeDetectedInclusive(){
  //this function controls the interfaciing of the reconstructed data to THSParticles
   Int_t iIDall[gpart]; //array containing order of particle IDs in id array for all tracks (incl ghosts) 
   Int_t iID[fNdet]; //array containing order of particle IDs in id array for "real" tracks

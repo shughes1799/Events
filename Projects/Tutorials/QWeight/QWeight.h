@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Tue Jul 22 16:26:43 2014 by ROOT version 5.34/14
+// Wed Nov 26 12:01:12 2014 by ROOT version 5.34/14
 // from TTree HSParticles/A tree containing reconstructed particles
 // found on file: /home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HSID/inp1_50.root
 //////////////////////////////////////////////////////////
@@ -145,7 +145,8 @@ Bool_t QWeight::Notify()
     fOutTree->Branch("SigMean",&fSigMean,"SigMean/F");
     fOutTree->Branch("SB",&fSB,"SB/F");
   }
-  else fChain->CopyAddresses(fOutTree);//reset the branch addresses of the cloned tree to the new file tree
+  else {fChain->CopyAddresses(fOutTree);}//reset the branch addresses of the cloned tree to the new file tree
+  THSOutput::InitOutTree();
 
    return kTRUE;
 }

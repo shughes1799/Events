@@ -231,6 +231,9 @@ Bool_t AddData(RooWorkspace* ws, TTree* schain){
   RooRealVar MN("MN","MN",0.8,1.3) ;
   RooRealVar EG("Eg","Eg",1.1,1.3) ;
   RooRealVar CT("cthCM","cthCM",-0.2,0.2);
+ //Event ID number....note the max number of events is implied 1E12
+  //Keep this in for synchronisation purposes
+  RooRealVar ID("fgID","fgID",0,1E12);
 
   if( schain->GetEntryList()) {
     //If there is an entry list give a unique name to the datset
