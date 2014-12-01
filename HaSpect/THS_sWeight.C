@@ -238,14 +238,14 @@ Bool_t AddData(RooWorkspace* ws, TTree* schain){
   if( schain->GetEntryList()) {
     //If there is an entry list give a unique name to the datset
     //Here I am only actually going to add the varibale ML to the dataset
-    RooDataSet data(dataSetName=TString(schain->GetEntryList()->GetName())+"DS","Total data",RooArgSet(ML),Import(*cop));
+    RooDataSet data(dataSetName=TString(schain->GetEntryList()->GetName())+"DS","Total data",RooArgSet(ML,ID),Import(*cop));
     cout<<"Import data to workspace"<<endl;
     // import data into workspace
     ws->import(data);
   }
   else{
     
-    RooDataSet data(dataSetName,"Total data",RooArgSet(ML),Import(*cop));
+    RooDataSet data(dataSetName,"Total data",RooArgSet(ML,ID),Import(*cop));
     cout<<"Import data to workspace"<<endl;
     // import data into workspace
     ws->import(data);
