@@ -65,7 +65,18 @@ void CLAStoHS::SlaveBegin(TTree * /*tree*/)
    fMissing=new TLorentzVector(); //missing
    fOutTree->Branch("beam",&fHSgamma,buff,split);
    fOutTree->Branch("miss",&fMissing,buff,split);
-  
+
+   //Histogram Additions
+   //if you want kinematic bins you must define fHisbins here
+   //  fHisbins=new TH2F("My Bins","E and t",10,1.5,3.5,10,0,5);
+   if(fHisbins) fOutput->Add(fHisbins);
+   //  fHisbins->SetXTitle("Eg");//give useful axis name
+   //  fHisbins->SetYTitle("t");//give useful axis name
+   THSHisto::ChangeNames();
+   // THSHisto::LoadCut("mass_gt_0");
+   THSHisto::LoadCut("NoCut");
+   THSHisto::LoadHistograms();
+   
 }
 
 Bool_t CLAStoHS::Process(Long64_t entry)
@@ -96,9 +107,19 @@ Bool_t CLAStoHS::Process(Long64_t entry)
    //example cut, missing mass must be within 50MeV of target mass
    // if(TMath::Abs(fMissing.M()-gTarget.M())>0.05) return kTRUE; //failed the cut, don't fill
    //all particles reconstructed, all cuts past, fill the output tree
- 
-   THSOutput::HSProcessFill();
-   return kTRUE;
+
+   //Histogram Additions
+   
+   //  Int_t kinBin=GetKinBin(beam->P4().E(),t);//if fHisbins is defined need to give this meaningful arguments
+   
+  FillHistograms("NoCut",0);
+  //FillHistograms("Cut1",kinBin);
+  //if(fDetParticle[0]->P4().M()>0) FillHistograms("mass_gt_0",0);
+  //if(beam->P4().E()>2) FillHistograms("Eg_gt_2",kinBin);
+  
+  
+  THSOutput::HSProcessFill();
+  return kTRUE;
 }
 
 void CLAStoHS::SlaveTerminate()
@@ -209,6 +230,27 @@ Bool_t CLAStoHS::MakeBeam(Float_t Tmid,Float_t Tcut){
   if(!gotGamma) return kFALSE; //didn't get a photon event no good
   return kTRUE; //got one good photon
 }
+//Histogram Functions
+
+void CLAStoHS::HistogramList(TString sLabel){
+  TDirectory::AddDirectory(kFALSE); //do not add to current directory
+  //now define all histograms and add to Output
+  //label includes kinematic bin and additional cut name
+  // e.g fOutput->Add(MapHist(new TH1F("Mp1"+sLabel,"M_{p1}"+sLabel,100,0,2)));
+
+ //end of histogram list
+  TDirectory::AddDirectory(kTRUE); //back to normal
+}
+void CLAStoHS::FillHistograms(TString sCut,Int_t bin){
+  fCurrCut=sCut;
+  fCurrBin=bin;
+  //Get histogram from list
+  //Fill histogram
+  TString sLabel;
+  sLabel=sCut+fVecBinNames[bin];
+  // e.g. FindHist("Mp1"+sLabel)->Fill(fp1->M());
+}
+
 
 void CLAStoHS::GetEventPartBranches(Int_t evi){
   b_cx->GetEvent(evi);

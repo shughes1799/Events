@@ -11,6 +11,11 @@
 #include <TROOT.h>
 #include <TChain.h>
 #include <TFile.h>
+#include <TH1F.h>
+#include <TH2F.h>
+#include <TH2.h>
+#include <TF1.h>
+
 //#include <TLorentzVector.h>
 #include <TSelector.h>
 #include <iostream>
@@ -444,6 +449,10 @@ public :
    virtual TList  *GetOutputList() const { return fOutput; }
    virtual void    SlaveTerminate();
    virtual void    Terminate();
+
+   //Add THSHisto functions
+   virtual void HistogramList(TString sLabel);
+   virtual void FillHistograms(TString sCut,Int_t bin);
 
    ClassDef(CLAStoHS,0);
 };
