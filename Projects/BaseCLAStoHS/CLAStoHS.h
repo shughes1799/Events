@@ -62,6 +62,46 @@ class CLAStoHS : public TSelector, public  THSOutput {
   Float_t OmegaMCHigh;
   Float_t EtaMCLow;
   Float_t EtaMChigh;
+
+  //Combination 1
+  Float_t Comb1MissingMCLow;
+  Float_t Comb1MissingMCHigh;
+  Float_t Comb1OmegaMCLow;
+  Float_t Comb1OmegaMCHigh;
+  Float_t Comb1EtaMCLow;
+  Float_t Comb1EtaMChigh;
+
+
+ //Combination 2
+  Float_t Comb2MissingMCLow;
+  Float_t Comb2MissingMCHigh;
+  Float_t Comb2OmegaMCLow;
+  Float_t Comb2OmegaMCHigh;
+  Float_t Comb2EtaMCLow;
+  Float_t Comb2EtaMChigh;
+
+  //Combination 3
+  Float_t Comb3MissingMCLow;
+  Float_t Comb3MissingMCHigh;
+  Float_t Comb3OmegaMCLow;
+  Float_t Comb3OmegaMCHigh;
+  Float_t Comb3EtaMCLow;
+  Float_t Comb3EtaMChigh;
+
+  //Combination 4
+  Float_t Comb4MissingMCLow;
+  Float_t Comb4MissingMCHigh;
+  Float_t Comb4OmegaMCLow;
+  Float_t Comb4OmegaMCHigh;
+  Float_t Comb4EtaMCLow;
+  Float_t Comb4EtaMChigh;
+
+  //Delta Vextex variables
+
+  TVector3 fOmegaCand1DeltaVertex;
+  TVector3 fOmegaCand2DeltaVertex;
+  TVector3 fOmegaCand3DeltaVertex;
+  TVector3 fOmegaCand4DeltaVertex;
   
   //Fitting Parameter Variables
 
@@ -460,8 +500,12 @@ class CLAStoHS : public TSelector, public  THSOutput {
 
   //fOutName - if directory will fill with filtered files of the same name as input
   //fOutName - if full filename will just fill the single file with output of all input
+
+  //Place to null pointers in the contructor
  CLAStoHS(TTree * /*tree*/ =0) : THSOutput(), fHSgamma(0), fMissing(0), fChain(0),fOmegaCand1(0), fOmegaCand2(0), fOmegaCand3(0), fOmegaCand4(0), fPionComb1(0), fPionComb2(0), fPionComb3(0), fPionComb4(0), fBeamEnergySelection(0) { }
   //CLAStoHS(TTree * /*tree*/ =0) : THSOutput(), fHSgamma(0), fMissing(0), fChain(0) { fOutName="/home/dglazier/Work/Research/HaSpect/data/pippippimMn_HS2/OneFile.root";}
+ 
+
   virtual ~CLAStoHS();
   virtual Int_t   Version() const { return 2; }
   virtual void    Begin(TTree *tree);

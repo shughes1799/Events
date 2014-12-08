@@ -91,6 +91,39 @@ void CLAStoHS::SlaveBegin(TTree * /*tree*/)
    EtaMCLow = 0;
    EtaMChigh = 0;
 
+   //Combination 1 variables
+   Comb1MissingMCLow = 0.105;
+   Comb1MissingMCHigh = 0.170;
+   Comb1OmegaMCLow = 0.76;
+   Comb1OmegaMCHigh = 0.81;
+   Comb1EtaMCLow = 0;
+   Comb1EtaMChigh = 0;
+
+   //Combination 2 variables
+   Comb2MissingMCLow = 0.105;
+   Comb2MissingMCHigh = 0.170;
+   Comb2OmegaMCLow = 0.76;
+   Comb2OmegaMCHigh = 0.81;
+   Comb2EtaMCLow = 0;
+   Comb2EtaMChigh = 0;
+
+   //Combination 3 variables
+   Comb3MissingMCLow = 0.105;
+   Comb3MissingMCHigh = 0.170;
+   Comb3OmegaMCLow = 0.76;
+   Comb3OmegaMCHigh = 0.81;
+   Comb3EtaMCLow = 0;
+   Comb3EtaMChigh = 0;
+
+   //Combination 4 variables
+   Comb4MissingMCLow = 0.105;
+   Comb4MissingMCHigh = 0.170;
+   Comb4OmegaMCLow = 0.76;
+   Comb4OmegaMCHigh = 0.81;
+   Comb4EtaMCLow = 0.53;
+   Comb4EtaMChigh = 0.57;
+
+
    //Combination Parameters
    double Par1[7] = {93577.99,-23139.8,43067.9,-23129.5,982.942,0.783338,0.0139013}; //Cand 1
    double Par2[7] = {-16970.9,57122.7,-57869.2,17910.2,1116.62,0.782595,0.0117021};  //Cand 2
@@ -307,6 +340,32 @@ void CLAStoHS::HistogramList(TString sLabel){
   fOutput->Add(MapHist(new TH2F("histo_n13"+sLabel,"Missing Mass vs #omega MassCand3;Missing Mass(GeV/c^{2});#omega Candidate Mass(GeV/c^{2})",50,0.05,0.20,50,0.4,1.0)));
   fOutput->Add(MapHist(new TH2F("histo_n14"+sLabel,"Missing Mass vs #omega MassCand4;Missing Mass(GeV/c^{2});#omega Candidate Mass(GeV/c^{2})",50,0.05,0.20,50,0.4,1.0)));
 
+//Selected Region Histograms
+  fOutput->Add(MapHist(new TH2F("OmegaCandComb1"+sLabel,"Missing Mass vs #omega MassCand1;Missing Mass(GeV/c^{2});#omega Candidate Mass(GeV/c^{2})",50,0.1,0.175,50,0.75,0.82)));		    
+  fOutput->Add(MapHist(new TH2F("OmegaCandComb1Other2Pions"+sLabel,"Missing Mass vs #omega MassCand4;Missing Mass(GeV/c^{2});#omega Candidate Mass(GeV/c^{2})",50,0.1,0.175,50,0.4,1.0)));
+  fOutput->Add(MapHist(new TH2F("OmegaCandComb1NotSelected"+sLabel,"Missing Mass vs #omega MassCand1;Missing Mass(GeV/c^{2});#omega Candidate Mass(GeV/c^{2})",50,0.05,0.20,50,0.4,1.0)));
+  fOutput->Add(MapHist(new TH2F("OmegaCandComb1BeamEnergy"+sLabel,"Beam Energy vs #omega MassCand1;Beam Energy(GeV/c^{2});#omega Candidate Mass(GeV/c^{2})",50,1.75,4.0,50,0.75,0.82)));
+  fOutput->Add(MapHist(new TH2F("OmegaCandComb1DeltaZ"+sLabel,"#DeltaZ vs #omega MassCand1;#DeltaZ Vextex(cm);#omega Candidate Mass(GeV/c^{2})",200,-20,20,50,0.75,0.82)));
+ 
+  fOutput->Add(MapHist(new TH2F("OmegaCandComb2"+sLabel,"Missing Mass vs #omega MassCand2;Missing Mass(GeV/c^{2});#omega Candidate Mass(GeV/c^{2})",50,0.1,0.175,50,0.75,0.82)));	           
+  fOutput->Add(MapHist(new TH2F("OmegaCandComb2Other2Pions"+sLabel,"Missing Mass vs #omega MassCand3;Missing Mass(GeV/c^{2});#omega Candidate Mass(GeV/c^{2})",50,0.1,0.175,50,0.4,1.0)));
+  fOutput->Add(MapHist(new TH2F("OmegaCandComb2NotSelected"+sLabel,"Missing Mass vs #omega MassCand2;Missing Mass(GeV/c^{2});#omega Candidate Mass(GeV/c^{2})",50,0.05,0.20,50,0.4,1.0)));
+  fOutput->Add(MapHist(new TH2F("OmegaCandComb2BeamEnergy"+sLabel,"Beam Energy vs #omega MassCand2;Beam Energy(GeV/c^{2});#omega Candidate Mass(GeV/c^{2})",50,1.75,4.0,50,0.75,0.82)));
+  fOutput->Add(MapHist(new TH2F("OmegaCandComb2DeltaZ"+sLabel,"#DeltaZ vs #omega MassCand2;#DeltaZ Vextex(cm);#omega Candidate Mass(GeV/c^{2})",200,-20,20,50,0.75,0.82)));
+
+  fOutput->Add(MapHist(new TH2F("OmegaCandComb3"+sLabel,"Missing Mass vs #omega MassCand3;Missing Mass(GeV/c^{2});#omega Candidate Mass(GeV/c^{2})",50,0.1,0.175,50,0.75,0.82)));		    
+  fOutput->Add(MapHist(new TH2F("OmegaCandComb3Other2Pions"+sLabel,"Missing Mass vs #omega MassCand2;Missing Mass(GeV/c^{2});#omega Candidate Mass(GeV/c^{2})",50,0.1,0.175,50,0.4,1.0)));
+  fOutput->Add(MapHist(new TH2F("OmegaCandComb3NotSelected"+sLabel,"Missing Mass vs #omega MassCand3;Missing Mass(GeV/c^{2});#omega Candidate Mass(GeV/c^{2})",50,0.05,0.20,50,0.4,1.0)));
+  fOutput->Add(MapHist(new TH2F("OmegaCandComb3BeamEnergy"+sLabel,"Beam Energy vs #omega MassCand3;Beam Energy(GeV/c^{2});#omega Candidate Mass(GeV/c^{2})",50,1.75,4.0,50,0.75,0.82)));
+  fOutput->Add(MapHist(new TH2F("OmegaCandComb3DeltaZ"+sLabel,"#DeltaZ vs #omega MassCand3;#DeltaZ Vextex(cm);#omega Candidate Mass(GeV/c^{2})",200,-20,20,50,0.75,0.82)));
+
+  fOutput->Add(MapHist(new TH2F("OmegaCandComb4"+sLabel,"Missing Mass vs #omega MassCand4;Missing Mass(GeV/c^{2});#omega Candidate Mass(GeV/c^{2})",50,0.1,0.175,50,0.75,0.82)));		    
+  fOutput->Add(MapHist(new TH2F("OmegaCandComb4Other2Pions"+sLabel,"Missing Mass vs #omega MassCand1;Missing Mass(GeV/c^{2});#omega Candidate Mass(GeV/c^{2})",50,0.1,0.175,50,0.4,1.0)));
+  fOutput->Add(MapHist(new TH2F("OmegaCandComb4NotSelected"+sLabel,"Missing Mass vs #omega MassCand4;Missing Mass(GeV/c^{2});#omega Candidate Mass(GeV/c^{2})",50,0.05,0.20,50,0.4,1.0)));
+  fOutput->Add(MapHist(new TH2F("OmegaCandComb4BeamEnergy"+sLabel,"Beam Energy vs #omega MassCand4;Beam Energy(GeV/c^{2});#omega Candidate Mass(GeV/c^{2})",50,1.75,4.0,50,0.75,0.82)));
+  fOutput->Add(MapHist(new TH2F("OmegaCandComb4DeltaZ"+sLabel,"#DeltaZ vs #omega MassCand4;#DeltaZ Vextex(cm);#omega Candidate Mass(GeV/c^{2})",200,-20,20,50,0.75,0.82)));
+
+
   //end of histogram list
   TDirectory::AddDirectory(kTRUE); //back to normal
 }
@@ -325,6 +384,58 @@ void CLAStoHS::FillHistograms(TString sCut,Int_t bin){
   FindHist("histo_n12"+sLabel)->Fill(fMissing->M(), fOmegaCand2->M());
   FindHist("histo_n13"+sLabel)->Fill(fMissing->M(), fOmegaCand3->M());
   FindHist("histo_n14"+sLabel)->Fill(fMissing->M(), fOmegaCand4->M());
+
+//Selecting regions of interest
+
+//Combination 1
+    if (fMissing->M() >= Comb1MissingMCLow && fMissing->M() <= Comb1MissingMCHigh && fOmegaCand1->M() >= Comb1OmegaMCLow && fOmegaCand1->M()<= Comb1OmegaMCHigh){
+
+      FindHist("OmegaCandComb1"+sLabel)->Fill(fMissing->M(), fOmegaCand1->M()); //Omega Candidate
+      FindHist("OmegaCandComb1Other2Pions"+sLabel)->Fill(fMissing->M(),fOmegaCand4->M()); //Other 2 pions with missing mass
+      FindHist("OmegaCandComb1BeamEnergy"+sLabel)->Fill(fBeamEnergySelection->E(),fOmegaCand1->M());
+      FindHist("OmegaCandComb1DeltaZ"+sLabel)->Fill(fOmegaCand1DeltaVertex.Z(),fOmegaCand1->M());
+    }
+    else{
+      FindHist("OmegaCandComb1NotSelected"+sLabel)->Fill(fMissing->M(),fOmegaCand1->M()); //Not selected region
+    }
+
+    //Combination 2
+    if (fMissing->M() >= Comb2MissingMCLow && fMissing->M() <= Comb2MissingMCHigh && fOmegaCand2->M() >= Comb2OmegaMCLow && fOmegaCand2->M()<= Comb2OmegaMCHigh){
+      
+      FindHist("OmegaCandComb2"+sLabel)->Fill(fMissing->M(), fOmegaCand2->M()); //Omega Candidate
+      FindHist("OmegaCandComb2Other2Pions"+sLabel)->Fill(fMissing->M(),fOmegaCand3->M()); //Other 2 pions with missing mass
+      FindHist("OmegaCandComb2BeamEnergy"+sLabel)->Fill(fBeamEnergySelection->E(),fOmegaCand2->M());
+      FindHist("OmegaCandComb2DeltaZ"+sLabel)->Fill(fOmegaCand2DeltaVertex.Z(),fOmegaCand2->M());
+    }
+    else{
+      FindHist("OmegaCandComb2NotSelected"+sLabel)->Fill(fMissing->M(),fOmegaCand2->M()); //Not selected region
+    }
+    
+    //Combination 3
+    if (fMissing->M() >= Comb3MissingMCLow && fMissing->M() <= Comb3MissingMCHigh && fOmegaCand3->M() >= Comb3OmegaMCLow && fOmegaCand3->M()<= Comb3OmegaMCHigh){
+      
+      FindHist("OmegaCandComb3"+sLabel)->Fill(fMissing->M(), fOmegaCand3->M()); //Omega Candidate
+      FindHist("OmegaCandComb3Other2Pions"+sLabel)->Fill(fMissing->M(),fOmegaCand2->M()); //Other 2 pions with missing mass
+      FindHist("OmegaCandComb3BeamEnergy"+sLabel)->Fill(fBeamEnergySelection->E(),fOmegaCand3->M());
+      FindHist("OmegaCandComb3DeltaZ"+sLabel)->Fill(fOmegaCand3DeltaVertex.Z(),fOmegaCand3->M());
+    }
+    else{
+      FindHist("OmegaCandComb3NotSelected"+sLabel)->Fill(fMissing->M(),fOmegaCand3->M()); //Not selected region
+    }
+    
+    //Combination 4
+    if (fMissing->M() >= Comb4MissingMCLow && fMissing->M() <= Comb4MissingMCHigh && fOmegaCand4->M() >= Comb4OmegaMCLow && fOmegaCand4->M()<= Comb4OmegaMCHigh){
+      
+      FindHist("OmegaCandComb4"+sLabel)->Fill(fMissing->M(), fOmegaCand4->M()); //Omega Candidate
+      FindHist("OmegaCandComb4Other2Pions"+sLabel)->Fill(fMissing->M(),fOmegaCand1->M()); //Other 2 pions with missing mass
+      FindHist("OmegaCandComb4BeamEnergy"+sLabel)->Fill(fBeamEnergySelection->E(),fOmegaCand4->M());
+      FindHist("OmegaCandComb4DeltaZ"+sLabel)->Fill(fOmegaCand4DeltaVertex.Z(),fOmegaCand4->M());
+    }
+    else{
+      FindHist("OmegaCandComb4NotSelected"+sLabel)->Fill(fMissing->M(),fOmegaCand4->M()); //Not selected region
+    }
+
+
 
 
 }

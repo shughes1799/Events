@@ -5,8 +5,8 @@
 
    //Full Statistics 4th Filter Itteration
 
-   tree->Add("/Disk/ecdf_thehub/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/*.root");
-   // tree->Add("/Disk/ecdf_thehub/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_1.root");
+   //tree->Add("/Disk/ecdf_thehub/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/*.root");
+   tree->Add("/Disk/ecdf_thehub/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_1.root");
    // tree->Add("/Disk/ecdf_thehub/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_2.root");
    // tree->Add("/Disk/ecdf_thehub/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_3.root");
    // tree->Add("/Disk/ecdf_thehub/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_4.root");
@@ -32,7 +32,7 @@
    //		   "/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HS/");
 
    gSystem->Setenv("HSOUT",
-		   "/phys/linux/s0677668/Haspect/OmegaPiPPiMPDataPortion/OutputTest201/TestSimplifiedFullStats2.root");
+		   "/phys/linux/s0677668/Haspect/OmegaPiPPiMPDataPortion/OutputTest202/TestLessSimplified1File3.root");
    
    //Configure the analysis (i.e PROOF, source compilation...)
    TString HSANA=gSystem->Getenv("HSANA");
