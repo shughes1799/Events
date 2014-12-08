@@ -460,7 +460,7 @@ class CLAStoHS : public TSelector, public  THSOutput {
 
   //fOutName - if directory will fill with filtered files of the same name as input
   //fOutName - if full filename will just fill the single file with output of all input
- CLAStoHS(TTree * /*tree*/ =0) : THSOutput(), fHSgamma(0), fMissing(0), fChain(0) { }
+ CLAStoHS(TTree * /*tree*/ =0) : THSOutput(), fHSgamma(0), fMissing(0), fChain(0),fOmegaCand1(0), fOmegaCand2(0), fOmegaCand3(0), fOmegaCand4(0), fPionComb1(0), fPionComb2(0), fPionComb3(0), fPionComb4(0), fBeamEnergySelection(0) { }
   //CLAStoHS(TTree * /*tree*/ =0) : THSOutput(), fHSgamma(0), fMissing(0), fChain(0) { fOutName="/home/dglazier/Work/Research/HaSpect/data/pippippimMn_HS2/OneFile.root";}
   virtual ~CLAStoHS();
   virtual Int_t   Version() const { return 2; }
