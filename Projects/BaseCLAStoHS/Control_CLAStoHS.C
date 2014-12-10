@@ -32,7 +32,7 @@
    //		   "/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HS/");
 
    gSystem->Setenv("HSOUT",
-		   "/phys/linux/s0677668/Haspect/OmegaPiPPiMPDataPortion/OutputTest202/TestLessSimplified1File3.root");
+		   "/phys/linux/s0677668/Haspect/OmegaPiPPiMPDataPortion/OutputTest204/TestLessSimplified1File1.root");
    
    //Configure the analysis (i.e PROOF, source compilation...)
    TString HSANA=gSystem->Getenv("HSANA");

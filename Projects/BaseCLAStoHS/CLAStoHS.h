@@ -50,6 +50,9 @@ class CLAStoHS : public TSelector, public  THSOutput {
   void MakeDetected();                          // convert the input data to THSParticles
   Bool_t MakeBeam(Float_t Tmid,Float_t Tcut);   // convert the beam branches into a THSParticle
   
+  //Simon Functions
+  Double_t GetWeight(Double_t *par, Double_t x); //Weighting histograms based on function parameters
+
  public :
   TTree          *fChain;   //!pointer to the analyzed TTree or TChain
   
