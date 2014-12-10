@@ -39,6 +39,7 @@ class CLAStoHS : public TSelector, public  THSOutput {
   TLorentzVector* fPionComb3;  // The Pion Combination 3 4-vector The faster PiM and the slower PiP
   TLorentzVector* fPionComb4;  // The Pion Combination 4 4-vector The faster PiM and the faster PiP
   TLorentzVector* fBeamEnergySelection; //Variable for converting the THSParticle to a TLorentzVector to extract the energy.
+  TLorentzVector* fProton; //The scattered proton from the gamma interaction
 
 
   //public:
@@ -505,7 +506,7 @@ class CLAStoHS : public TSelector, public  THSOutput {
   //fOutName - if full filename will just fill the single file with output of all input
 
   //Place to null pointers in the contructor
- CLAStoHS(TTree * /*tree*/ =0) : THSOutput(), fHSgamma(0), fMissing(0), fChain(0),fOmegaCand1(0), fOmegaCand2(0), fOmegaCand3(0), fOmegaCand4(0), fPionComb1(0), fPionComb2(0), fPionComb3(0), fPionComb4(0), fBeamEnergySelection(0) { }
+ CLAStoHS(TTree * /*tree*/ =0) : THSOutput(), fHSgamma(0), fMissing(0), fChain(0),fOmegaCand1(0), fOmegaCand2(0), fOmegaCand3(0), fOmegaCand4(0), fPionComb1(0), fPionComb2(0), fPionComb3(0), fPionComb4(0), fBeamEnergySelection(0), fProton(0) { }
   //CLAStoHS(TTree * /*tree*/ =0) : THSOutput(), fHSgamma(0), fMissing(0), fChain(0) { fOutName="/home/dglazier/Work/Research/HaSpect/data/pippippimMn_HS2/OneFile.root";}
  
 
