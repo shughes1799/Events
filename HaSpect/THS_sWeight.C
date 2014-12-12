@@ -216,7 +216,8 @@ Bool_t AddData(RooWorkspace* ws, TTree* schain){
   if(schain->GetEntryList()){//if chain has an entry list use this to filter dataset now, note ROOFIT data set do not currently use TEntryLists
     cop = schain->CloneTree(0);
     for(Int_t i=0;i<schain->GetEntryList()->GetN();i++){
-      schain->GetEntry(schain->GetEntryNumber(i));
+      //break in case the current chain has less files than KinBins chain
+      if(schain->GetEntry(schain->GetEntryNumber(i))<1) break;
       cop->Fill();
     }
     if(cop->GetEntries()<50)return kFALSE; //Fit will struggle with few events, but this can be removed if appropriate
