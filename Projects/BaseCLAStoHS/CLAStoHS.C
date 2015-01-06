@@ -168,8 +168,8 @@ void CLAStoHS::MakeDetected(){
   TMath::Sort((Int_t)gpart,id,iIDall,kFALSE); //order the array in asscending order(kFALSE), e.g. -211,211,211
   //write only the indexes of the real tracks to the ID array
   UInt_t Ndet=0;
-  for(Int_t ireal=0;ireal<gpart;ireal++) if(stat[ireal]>0)iID[Ndet++]=iIDall[ireal];
-  //the ordering in iID[] should now match fFinalState and fEventSate
+   for(Int_t ireal=0;ireal<gpart;ireal++) if(stat[iIDall[ireal]]>0)iID[Ndet++]=iIDall[ireal];
+ //the ordering in iID[] should now match fFinalState and fEventSate
   //loop over different particle types
   Ndet=0;
   for(UInt_t itype=0;itype<fNtype.size();itype++){ 
