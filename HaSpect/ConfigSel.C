@@ -10,6 +10,7 @@
  IsHSTree=kFALSE;   //Use THSOuput to THSParticle interface (probably not)
  IsQval=kFALSE;   //Use Qvalue event weighting algorithm
  IsSW=kFALSE;   //Use sWeights event weighting algorithm
+ NLPS=0;   //Use Longitudinal phase space class with NLPS particles
 
  FileName="";   // The input filename containing the tree
  TreeName="";   // The name of the tree

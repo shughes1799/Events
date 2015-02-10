@@ -5,6 +5,7 @@ Bool_t IsNewTree=kFALSE;  //Output a brand new tree
 Bool_t IsHSTree=kFALSE;   //Use THSOuput to THSParticle interface (probably not)
 Bool_t IsQval=kFALSE;   //Use Qvale event weighting algorithm
 Bool_t IsSW=kFALSE;   //Use SWeight event weighting algorithm
+Int_t NLPS=0;   //Use Longitidinal phase space class with NLPS particles
 
 TString FileName;   // The input filename containing the tree
 TString TreeName;   // The name of the tree
@@ -45,6 +46,8 @@ void MakeHSSelector(Bool_t IsOverwrite=kFALSE){
   ControlMacro();
  //Use sWeights
   if(IsSW)UseSWeight();
+  //USE Longitudinal phase space
+  if(NLPS) UseLongPS();
 }
 void ControlMacro(){
   TString HSANA=gSystem->Getenv("HSANA");
@@ -481,6 +484,75 @@ void HSit_h(){
 
   macro.SaveSource(SelName+".h");
 }
+void UseLongPS(){
+  ///////////////////////////////////HEADER
+ //now open .h file and add lines
+  TMacro macroH(SelName+".h");
+  TList *lines=macroH.GetListOfLines();
+  TObject* obj=0;
+
+  obj=macroH.GetLineWith( "#include \"THSOutput.h\"");
+  Int_t place=lines->IndexOf(obj)+1; //get line number   
+  lines->AddAt(new TObjString("#include \"THSLongPS.h\""),place++); 
+  
+  obj=macroH.GetLineWith( "TTree          *fChain;");
+  Int_t place=lines->IndexOf(obj)+1; //get line number   
+  lines->AddAt(new TObjString("   THSLongPS* fLPS;"),place++); 
+
+  //Additional initialisation at constructor
+  TString sline=macroH.GetLineWith("fChain(0)")->GetString();
+  sline.ReplaceAll("fChain(0)","fChain(0),fLPS(0)");
+  macroH.GetLineWith("fChain(0)")->SetString(sline);
+
+  sline=macroH.GetLineWith("virtual ~")->GetString();
+  sline.ReplaceAll("{ }","{SafeDelete(fLPS); }");
+  macroH.GetLineWith("virtual ~")->SetString(sline);
+
+  macroH.SaveSource(SelName+".h");
+  ////////////////////////////////////.C
+ //now open .C file and add lines
+  TMacro macroC(SelName+".C");
+  lines=macroC.GetListOfLines();
+  obj=macroC.GetLineWith( "THSOutput::HSSlaveBegin(fInput,fOutput);");
+  place=lines->IndexOf(obj)+1; //get line number   
+  lines->AddAt(new TObjString("   //Construct the LongPS object with number of particles in final state"),place++); 
+  TString strLPS;
+  strLPS.Form("   fLPS=new THSLongPS(%d);",NLPS);
+  lines->AddAt(new TObjString(strLPS),place++); 
+ if(IsHisto){
+   lines->AddAt(new TObjString("//IF using THSHisto can use next line to create cut for each sector"),place++); 
+   lines->AddAt(new TObjString("//Alternatively you could use the sector number do define a kinemtic bin and use fHisbins"),place++); 
+   lines->AddAt(new TObjString("//for(Int_t i=0;i<fLPS->GetNSector();i++)   THSHisto::LoadCut(fLPS->GetSectName(i));"),place++); 
+ }
+ 
+  obj=macroC.GetLineWith( "GetEntry(entry);");
+  place=lines->IndexOf(obj)+1; //get line number   
+  lines->AddAt(new TObjString("   fLPS->Reset();"),place++); 
+  lines->AddAt(new TObjString("   //below you need to give the final state TLorentzVectors to fLPS. Replace ??? by the TLorentzVector object. The order gives the particle indice for the sectors"),place++); 
+  for(Int_t ii=0;ii<NLPS;ii++)
+    lines->AddAt(new TObjString("  fLPS->AddParticle(???);"),place++); 
+  lines->AddAt(new TObjString("  fLPS->Analyse();"),place++); 
+
+  if(IsHisto){
+    obj=macroC.GetLineWith("FillHistograms(\"Cut1\",0);");
+    place=lines->IndexOf(obj)+1; //get line number   
+    lines->AddAt(new TObjString("  // FillHistograms(fLPS->GetSectName(fLPS->GetSector()),kinBin);"),place++); 
+
+    obj=macroC.GetLineWith(" //end of histogram list");
+    place=lines->IndexOf(obj)-1; //get line number 
+    lines->AddAt(new TObjString("  fOutput->Add(MapHist(new TH2F(\"MTopVMBot\"+sLabel,\"M_{Top} V M_{Bot}\"+sLabel,200,0.2,2,200,0.2,2)));"),place++);
+
+    obj=macroC.GetLineWith("FindHist(\"Mp1\"+sLabel)");
+    place=lines->IndexOf(obj)+1; //get line number 
+    lines->AddAt(new TObjString("  ((TH2F*)FindHist(\"MTopVMBot\"+sLabel))->Fill(fLPS->GetTopMass(),fLPS->GetBotMass());"),place++);
+  }
+  macroC.SaveSource(SelName+".C");
+
+  // TMacro macroCon(TString("Control_")+SelName+".C");
+  // obj=macroCon.GetLineWith( "");
+  // place=lines->IndexOf(obj)+1; //get line number   
+
+}
 void UseSWeight(){
   ///////////////////////////////////HEADER
  //now open .h file and add lines
@@ -591,6 +663,8 @@ void UseSWeight(){
    lines->Add(new TObjString("   // The next 2 lines are required to check synchronisation with parent tree"));
   lines->Add(new TObjString("   // This allows for filtering events while performing the sWeight fit"));
   lines->Add(new TObjString("   // The events output from this selector will all have been included in the fit"));
+  lines->Add(new TObjString("   if(!fCurrSW) return kFALSE;//it maybe this event was not included in kinematic bins..."));
+  lines->Add(new TObjString("   if(!fCurrSW->GetSDataSet()) return kFALSE;"));
   lines->Add(new TObjString("   if(fCurrSW->GetSDataSet()->get(fSEntry[fSWBin]))"));
   lines->Add(new TObjString("     if((Int_t)(fCurrSW->GetSDataSet()->get(fSEntry[fSWBin])->getRealValue(\"fgID\"))!=fgID) return kFALSE; //this event is not in the sPlot"));
   lines->Add(new TObjString("   //Now get the weights, by default assume signal and background types only"));
