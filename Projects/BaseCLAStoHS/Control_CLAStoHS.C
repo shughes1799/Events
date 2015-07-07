@@ -11,7 +11,7 @@
    // gSystem->Setenv("HSOUT",
    //		   "/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HS/");
    gSystem->Setenv("HSOUT",
-		  "/phys/linux/s0677668/Haspect/OmegaPiPPiMPDataPortion/2015/July/Junk/TestStats19.root");
+		  "/phys/linux/s0677668/Haspect/OmegaPiPPiMPDataPortion/2015/July/Junk/TestStats20.root");
    //Configure the analysis (i.e PROOF, source compilation...)
    TString HSANA=gSystem->Getenv("HSANA");
    gROOT->LoadMacro(HSANA+"/HSControl.C");
