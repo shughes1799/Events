@@ -9,23 +9,23 @@
   tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_1.root");
   tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_2.root");
   tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_3.root");
-  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_4.root");
-  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_5.root");
-  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_6.root");
-  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_7.root");
-  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_8.root");
-  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_9.root");
-  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_10.root");
-  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_11.root");
-  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_12.root");
-  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_13.root");
-  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_14.root");
-  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_15.root");
-  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_16.root");
-  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_17.root");
-  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_18.root");
-  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_19.root");
-  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_20.root");
+  tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_4.root");
+  tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_5.root");
+  tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_6.root");
+  tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_7.root");
+  tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_8.root");
+  tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_9.root");
+  tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_10.root");
+  tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_11.root");
+  tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_12.root");
+  tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_13.root");
+  tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_14.root");
+  tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_15.root");
+  tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_16.root");
+  tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_17.root");
+  tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_18.root");
+  tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_19.root");
+  tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_20.root");
 
 
 
@@ -34,7 +34,7 @@
   //		   "/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HS/");
 
   gSystem->Setenv("HSOUT",
-		  "/phys/linux/s0677668/Haspect/OmegaPiPPiMPDataPortion/2015/July/Junk/TestStats17.root");
+		  "/phys/linux/s0677668/Haspect/OmegaPiPPiMPDataPortion/2015/July/Junk/TestStats25.root");
    
   //Configure the analysis (i.e PROOF, source compilation...)
   TString HSANA=gSystem->Getenv("HSANA");

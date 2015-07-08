@@ -759,6 +759,7 @@ Bool_t CLAStoHS::Notify()
   //cleanup previouos file
   //Use THSOutput functions to look after files
   THSOutput::HSNotify(fChain);
+  THSOutput::InitOutTree();
 
   return kTRUE;
 }
