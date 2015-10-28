@@ -69,6 +69,7 @@ TString dataSetName="swDS"; //Name tag for RooFit dataset
 TString pdfName="swPDF";  //Name tag for RooFit model PDF
 Long64_t EventCounter=0; // Total event counter
 TCanvas *canvas=new TCanvas(); //Canvas for plotting fit results
+  TTree* cop=0;
 //////////////////////////////////////////////////////////////////////
 //You must create your output file here....
 TFile* outPlots=new TFile("outname.root","recreate"); //File to write sPlots to
@@ -93,15 +94,11 @@ void THS_sWeight(){
 void Run_sWeight(TTree* schain,TString fel,TString hbname){
   //Make an array to hold the sPlot objects, one for each defined kinematic bin
   //Note if no bins are defined (fel="") only 1 total sPlot is produced and added to sPlots
-  TObjArray* sPlots=new TObjArray();
-  sPlots->SetOwner();
-  sPlots->SetName("HSsPlots");//This name will be used to retrieve the list in the TSelector class
+  TDirectory *sDir=outPlots->mkdir("HSsPlots");//This name will be used to retrieve the list in the TSelector class
+
   //If given an entrylist files check it and load entry lists
   if(fel.Contains(".root")) LoadEventEntryLists(fel,hbname);
      
-  TList* wsList=new TList(); //list to keep workspaces so they can be deleted after splots are written
-  wsList->SetOwner();
-
   if(!fEventEntryList){//Just do fit once
     // Create a new workspace to manage the project.
     RooWorkspace* wspace = new RooWorkspace("myWS");
@@ -112,10 +109,12 @@ void Run_sWeight(TTree* schain,TString fel,TString hbname){
     // This only considers a 1D PDF
     Add1DModel(wspace);
     //Calculate the sweights and add to the list
-    sPlots->Add(DoSPlot(wspace));
-    //  return sPlots;
-    //  delete wspace;
-    wsList->Add(wspace);
+    TDirectory* savedir=gDirectory;
+    sDir->cd();
+    DoSPlot(wspace)->Write(dataSetName);
+    savedir->cd();
+
+    delete wspace;
   }
   else{
     //loop over kinematic bin lists and do an splot for each
@@ -129,29 +128,37 @@ void Run_sWeight(TTree* schain,TString fel,TString hbname){
 	// Inside this function you will find a discription our model.
 	// This only considers a 1D PDF
 	Add1DModel(wspace);
-	//Calculate the sweights and add to the list
-	sPlots->Add(DoSPlot(wspace));
-	wspace->removeSet(dataSetName);
+	//Calculate the sweights and save it to file
+	TDirectory* savedir=gDirectory;
+	sDir->cd();
+	TString SPName;
+	SPName.Form("SPlotBin%d",iel);
+	DoSPlot(wspace)->Write(SPName);
+	savedir->cd();
+	if(wspace){ delete wspace;}
+  	if(cop)delete cop;
       }
-      else sPlots->Add(new TNamed("NA","NA")); //place holder
-      // delete wspace;
-      wsList->Add(wspace);
+      else {
+	TDirectory* savedir=gDirectory;
+	sDir->cd();
+	TString SPName;
+	SPName.Form("SPlotBin%d",iel);
+	TNamed(SPName.Data(),"dummy entry list").Write(); //place holder
+  	savedir->cd();
+ 	if(wspace){ delete wspace;}
+  	if(cop)delete cop;
+      }
     }
-
   }
   cout<<" fitted "<<EventCounter<<" events"<<endl;
   //Now write sPlots to ouput file
-  outPlots->cd();
-  sPlots->Write("HSsPlots",TObject::kSingleKey);//write as TObjArray not individual elements
   if(fKinBins){//If using kinematic bins also write the histogram defining it
     fKinBins->SetTitle(fKinBins->GetName());
     fKinBins->SetName("HSsPlotsBins");//This name will be used to retrieve it from TSelector class
     fKinBins->Write();
   }
   outPlots->Close();
-  delete wsList;//cleanup workspaces
-  delete sPlots;
- }
+}
 void Add1DModel(RooWorkspace* ws){
   //Add your own model here, it should be fitting variables given in AddData() (here it is ML)
   //I will leave example code here for now, but much will have to be rewritten for the users own analysis
@@ -212,7 +219,6 @@ Bool_t AddData(RooWorkspace* ws, TTree* schain){
   //import variables from your tree that you would like to fit
   //I will leave example code here, but users will need to edit for their own analysis
   cout<<"Got schain with "<<schain->GetEntries()<<" events"<<endl;
-  TTree* cop=0;
   if(schain->GetEntryList()){//if chain has an entry list use this to filter dataset now, note ROOFIT data set do not currently use TEntryLists
     cop = schain->CloneTree(0);
     for(Int_t i=0;i<schain->GetEntryList()->GetN();i++){

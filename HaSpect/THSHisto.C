@@ -152,7 +152,7 @@ void THSHisto::ChangeNames(/*TFile* list*/){
 	  tagname3=fHisbins->GetZaxis()->GetTitle();
 	  numb.Form("%1.2f_",fHisbins->GetZaxis()->GetBinCenter(zi));
 	  tagname3+=numb;
-	 if(Naxis==2){
+	 if(Naxis==3){
 	   xyz=fHisbins->GetBin(xi,yi,zi);
 	   binstr.Form("Bin%d",xyz);
 	   //fBinMap[binstr]=tagname1+tagname2+tagname3;
