@@ -641,7 +641,7 @@ void UseSWeight(){
   lines->AddAt(new TObjString("   }"),place++); 
   lines->AddAt(new TObjString("  cout<<\" LIST \"<<fsPlotList->GetEntries()<<endl; "),place++); 
   lines->AddAt(new TObjString("   fSEntry.assign(fsPlotList->GetEntries(),0);//initiate kinematic bin counters"),place++); 
-  lines->AddAt(new TObjString("   fSWKinBins=(TH1*)fSWFile->Get("HSsPlotsBins");//get histogram defining SW bins"),place++); 
+  lines->AddAt(new TObjString("   fSWKinBins=(TH1*)fSWFile->Get(\"HSsPlotsBins\");//get histogram defining SW bins"),place++); 
   lines->AddAt(new TObjString("   savedir->cd();"),place++); 
   lines->AddAt(new TObjString("   fSWBin=0;"),place++); 
   
