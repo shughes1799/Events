@@ -41,7 +41,25 @@ class CLAStoHS : public TSelector, public  THSOutput {
   TLorentzVector* fBeamEnergySelection; //Variable for converting the THSParticle to a TLorentzVector to extract the energy.
   TLorentzVector* fProton; //The scattered proton from the gamma interaction
 
+  TLorentzVector* fPiMFast0; // The Fast Pi Minus
+  TLorentzVector* fPiMSlow1; // The Slow Pi Minus
+  TLorentzVector* fPiPFast2; // The Fast Pi Plus
+  TLorentzVector* fPiPSlow3; // The Slow Pi Plus
 
+  //Dalitz Variables
+  TLorentzVector* fFastPiMPi0; //Combination of the Fast Pi Minus and the Pi0
+  TLorentzVector* fSlowPiMPi0; //Combination of the Slow Pi Minus and the Pi0
+  TLorentzVector* fFastPiPPi0; //Combination of the Fast Pi Plus and the Pi0
+  TLorentzVector* fSlowPiPPi0; //Combination of the Slow Pi Plus and the Pi0
+
+  TLorentzVector* fOmegaCand1PiMSlow1; //Combination of the Omega and Slow Pi Minus
+  TLorentzVector* fOmegaCand1PiPSlow3; //Combination of the Omega and Slow Pi Minus
+  TLorentzVector* fOmegaCand2PiMSlow1; //Combination of the Omega and Slow Pi Plus
+  TLorentzVector* fOmegaCand2PiPFast2; //Combination of the Omega and Fast Pi Plus
+  TLorentzVector* fOmegaCand3PiMFast0; //Combination of the Omega and Fast Pi Minus
+  TLorentzVector* fOmegaCand3PiPSlow3; //Combination of the Omega and Slow Pi Minus
+  TLorentzVector* fOmegaCand4PiMFast0; //Combination of the Omega and Fast Pi Plus
+  TLorentzVector* fOmegaCand4PiPFast2; //Combination of the Omega and Fast Pi Plus
 
   //public:
   //Functions used to process data
@@ -512,7 +530,7 @@ class CLAStoHS : public TSelector, public  THSOutput {
   //fOutName - if full filename will just fill the single file with output of all input
 
 //Place to null pointers in the contructor
- CLAStoHS(TTree * /*tree*/ =0) : THSOutput(), fHSgamma(0), fMissing(0), fChain(0), fOmegaCand1(0), fOmegaCand2(0), fOmegaCand3(0), fOmegaCand4(0), fPionComb1(0), fPionComb2(0), fPionComb3(0), fPionComb4(0), fBeamEnergySelection(0), fProton(0), total(0), g2(0) { }
+ CLAStoHS(TTree * /*tree*/ =0) : THSOutput(), fHSgamma(0), fMissing(0), fChain(0), fOmegaCand1(0), fOmegaCand2(0), fOmegaCand3(0), fOmegaCand4(0), fPionComb1(0), fPionComb2(0), fPionComb3(0), fPionComb4(0), fBeamEnergySelection(0), fProton(0), total(0), g2(0), fFastPiMPi0(0), fSlowPiMPi0(0),fFastPiPPi0(0), fSlowPiPPi0(0), fPiMFast0(0), fPiMSlow1(0), fPiPFast2(0), fPiPSlow3(0), fOmegaCand1PiMSlow1(0), fOmegaCand1PiPSlow3(0), fOmegaCand2PiMSlow1(0), fOmegaCand2PiPFast2(0), fOmegaCand3PiMFast0(0), fOmegaCand3PiPSlow3(0), fOmegaCand4PiMFast0(0), fOmegaCand4PiPFast2(0) { }
   //CLAStoHS(TTree * /*tree*/ =0) : THSOutput(), fHSgamma(0), fMissing(0), fChain(0) { fOutName="/home/dglazier/Work/Research/HaSpect/data/pippippimMn_HS2/OneFile.root";}
 
   virtual ~CLAStoHS();

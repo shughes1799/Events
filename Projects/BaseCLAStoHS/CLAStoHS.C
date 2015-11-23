@@ -52,6 +52,25 @@ CLAStoHS::~CLAStoHS(){
   SafeDelete(fPionComb4); //Added for fPionComb 4
   SafeDelete(fBeamEnergySelection); //Added for selecting beam energies of interest
   SafeDelete(fProton); //Added for looking at the scattered proton
+
+  SafeDelete(fPiMFast0); // The Fast Pi Minus
+  SafeDelete(fPiMSlow1); // The Slow Pi Minus
+  SafeDelete(fPiPFast2); // The Fast Pi Plus
+  SafeDelete(fPiPSlow3); // The Slow Pi Plus
+
+  SafeDelete(fFastPiMPi0); //Combination of the Fast Pi Minus and the Pi0
+  SafeDelete(fSlowPiMPi0); //Combination of the Slow Pi Minus and the Pi0
+  SafeDelete(fFastPiPPi0); //Combination of the Fast Pi Plus and the Pi0
+  SafeDelete(fSlowPiPPi0); //Combination of the Slow Pi Plus and the Pi0
+
+  SafeDelete(fOmegaCand1PiMSlow1); //Combination of the Omega and Slow Pi Minus
+  SafeDelete(fOmegaCand1PiPSlow3); //Combination of the Omega and Slow Pi Minus
+  SafeDelete(fOmegaCand2PiMSlow1); //Combination of the Omega and Slow Pi Plus
+  SafeDelete(fOmegaCand2PiPFast2); //Combination of the Omega and Fast Pi Plus
+  SafeDelete(fOmegaCand3PiMFast0); //Combination of the Omega and Fast Pi Minus
+  SafeDelete(fOmegaCand3PiPSlow3); //Combination of the Omega and Slow Pi Minus
+  SafeDelete(fOmegaCand4PiMFast0); //Combination of the Omega and Fast Pi Plus
+  SafeDelete(fOmegaCand4PiPFast2); //Combination of the Omega and Fast Pi Plus
  
   SafeDelete(total); //Histograms for the getweight function
   SafeDelete(g2);    //Histograms for the getweight function
@@ -89,6 +108,26 @@ void CLAStoHS::SlaveBegin(TTree * /*tree*/)
   fBeamEnergySelection=new TLorentzVector();
   fProton=new TLorentzVector(); //Scattered Proton
 
+  fPiMFast0=new TLorentzVector(); // The Fast Pi Minus
+  fPiMSlow1=new TLorentzVector(); // The Slow Pi Minus
+  fPiPFast2=new TLorentzVector(); // The Fast Pi Plus
+  fPiPSlow3=new TLorentzVector(); // The Slow Pi Plus
+
+  fFastPiMPi0=new TLorentzVector(); //Combination of the Fast Pi Minus and the Pi0
+  fSlowPiMPi0=new TLorentzVector(); //Combination of the Slow Pi Minus and the Pi0
+  fFastPiPPi0=new TLorentzVector(); //Combination of the Fast Pi Plus and the Pi0
+  fSlowPiPPi0=new TLorentzVector(); //Combination of the Slow Pi Plus and the Pi0
+
+  fOmegaCand1PiMSlow1=new TLorentzVector(); //Combination of the Omega and Slow Pi Minus
+  fOmegaCand1PiPSlow3=new TLorentzVector(); //Combination of the Omega and Slow Pi Minus
+  fOmegaCand2PiMSlow1=new TLorentzVector(); //Combination of the Omega and Slow Pi Plus
+  fOmegaCand2PiPFast2=new TLorentzVector(); //Combination of the Omega and Fast Pi Plus
+  fOmegaCand3PiMFast0=new TLorentzVector(); //Combination of the Omega and Fast Pi Minus
+  fOmegaCand3PiPSlow3=new TLorentzVector(); //Combination of the Omega and Slow Pi Minus
+  fOmegaCand4PiMFast0=new TLorentzVector(); //Combination of the Omega and Fast Pi Plus
+  fOmegaCand4PiPFast2=new TLorentzVector(); //Combination of the Omega and Fast Pi Plus
+
+
   //Histograms for the getweight function
   total = new TF1("total","pol4(0)+gaus(5)",0.63,0.95);
   g2    = new TF1("g2","gaus",0.74,0.82);
@@ -103,34 +142,34 @@ void CLAStoHS::SlaveBegin(TTree * /*tree*/)
   EtaMChigh = 0;
 
   //Combination 1 variables
-  Comb1MissingMCLow = 0.105;
-  Comb1MissingMCHigh = 0.170;
+  Comb1MissingMCLow = 0.11;
+  Comb1MissingMCHigh = 0.16;
   Comb1OmegaMCLow = 0.76;
-  Comb1OmegaMCHigh = 0.81;
+  Comb1OmegaMCHigh = 0.80;
   Comb1EtaMCLow = 0;
   Comb1EtaMChigh = 0;
 
   //Combination 2 variables
-  Comb2MissingMCLow = 0.105;
-  Comb2MissingMCHigh = 0.170;
+  Comb2MissingMCLow = 0.11;
+  Comb2MissingMCHigh = 0.16;
   Comb2OmegaMCLow = 0.76;
-  Comb2OmegaMCHigh = 0.81;
+  Comb2OmegaMCHigh = 0.80;
   Comb2EtaMCLow = 0;
   Comb2EtaMChigh = 0;
 
   //Combination 3 variables
-  Comb3MissingMCLow = 0.105;
-  Comb3MissingMCHigh = 0.170;
+  Comb3MissingMCLow = 0.11;
+  Comb3MissingMCHigh = 0.16;
   Comb3OmegaMCLow = 0.76;
-  Comb3OmegaMCHigh = 0.81;
+  Comb3OmegaMCHigh = 0.80;
   Comb3EtaMCLow = 0;
   Comb3EtaMChigh = 0;
 
   //Combination 4 variables
-  Comb4MissingMCLow = 0.105;
-  Comb4MissingMCHigh = 0.170;
+  Comb4MissingMCLow = 0.11;
+  Comb4MissingMCHigh = 0.16;
   Comb4OmegaMCLow = 0.76;
-  Comb4OmegaMCHigh = 0.81;
+  Comb4OmegaMCHigh = 0.80;
   Comb4EtaMCLow = 0.53;
   Comb4EtaMChigh = 0.57;
 
@@ -218,6 +257,16 @@ Bool_t CLAStoHS::Process(Long64_t entry)
   // if(TMath::Abs(fMissing.M()-gTarget.M())>0.05) return kTRUE; //failed the cut, don't fill
   //all particles reconstructed, all cuts past, fill the output tree
 
+
+  //Converting the particle entries to lorentz vectors
+  *fPiMFast0=fDetParticle[0]->P4(); // The Fast Pi Minus
+  *fPiMSlow1=fDetParticle[1]->P4(); // The Slow Pi Minus
+  *fPiPFast2=fDetParticle[2]->P4(); // The Fast Pi Plus
+  *fPiPSlow3=fDetParticle[3]->P4(); // The Slow Pi Plus
+
+  // cout << "Slow PiM " << fPiMSlow1->M2() << " Slow PiP " << fPiPSlow3->M2() << endl;
+  // cout << "Fast PiM " << fPiMFast0->M2() << " Fast PiP " << fPiPFast2->M2() << endl;
+
   //functions for determining Omega Candidates
   *fOmegaCand1=*fMissing+fDetParticle[0]->P4()+fDetParticle[2]->P4();
   *fOmegaCand2=*fMissing+fDetParticle[0]->P4()+fDetParticle[3]->P4();
@@ -245,6 +294,21 @@ Bool_t CLAStoHS::Process(Long64_t entry)
 
   *fProton = gTarget-fDetParticle[4]->P4();
 
+  //Dalitz Plot Objects
+
+  *fFastPiMPi0=*fMissing+fDetParticle[0]->P4();
+  *fSlowPiMPi0=*fMissing+fDetParticle[1]->P4();
+  *fFastPiPPi0=*fMissing+fDetParticle[2]->P4();
+  *fSlowPiPPi0=*fMissing+fDetParticle[3]->P4();
+
+  *fOmegaCand1PiMSlow1=*fOmegaCand1+fDetParticle[1]->P4(); //Combination of the Omega and Slow Pi Minus
+  *fOmegaCand1PiPSlow3=*fOmegaCand1+fDetParticle[3]->P4(); //Combination of the Omega and Slow Pi Minus
+  *fOmegaCand2PiMSlow1=*fOmegaCand2+fDetParticle[1]->P4(); //Combination of the Omega and Slow Pi Plus
+  *fOmegaCand2PiPFast2=*fOmegaCand2+fDetParticle[2]->P4(); //Combination of the Omega and Fast Pi Plus
+  *fOmegaCand3PiMFast0=*fOmegaCand3+fDetParticle[0]->P4(); //Combination of the Omega and Fast Pi Minus
+  *fOmegaCand3PiPSlow3=*fOmegaCand3+fDetParticle[3]->P4(); //Combination of the Omega and Slow Pi Minus
+  *fOmegaCand4PiMFast0=*fOmegaCand4+fDetParticle[0]->P4(); //Combination of the Omega and Fast Pi Plus
+  *fOmegaCand4PiPFast2=*fOmegaCand4+fDetParticle[2]->P4(); //Combination of the Omega and Fast Pi Plus
 
 
   //Histogram Additions
@@ -428,10 +492,10 @@ void CLAStoHS::HistogramList(TString sLabel){
 
 
 
-  //Weighted Dalitz Plots
+  //Weighted Plots
   
   fOutput->Add(MapHist(new TH2F("WeightedOmegaCandvsBeamEnergy"+sLabel,"Beam Energy vs #omega#pi^{-}#pi^{+};Beam Energy(GeV/c^{2});#omega#pi^{-}#pi^{+}(GeV/c^{2})",50,1.75,4.0,100,1.0,2.0)));
-  fOutput->Add(MapHist(new TH2F("tDepedencevsOmegaPiPi"+sLabel,"t dependence vs #omega#pi^{-}#pi^{+};t(GeV/c^{2});#omega#pi^{-}#pi^{+}(GeV/c^{2})",50,-5,0,100,1.0,2.0)));
+  //fOutput->Add(MapHist(new TH2F("tDepedencevsOmegaPiPi"+sLabel,"t dependence vs #omega#pi^{-}#pi^{+};t(GeV/c^{2});#omega#pi^{-}#pi^{+}(GeV/c^{2})",50,-5,0,100,1.0,2.0)));
 
   //Determining the t dependence 
 
@@ -444,7 +508,30 @@ void CLAStoHS::HistogramList(TString sLabel){
 
   fOutput->Add(MapHist(new TH1F("TaggerAcceptance"+sLabel, "Beam Energy for Tagger Acceptance; Beam Energy(GeV/c^{2})",50,1.75,4.0))); 
   fOutput->Add(MapHist(new TH1F("TaggerAcceptance2"+sLabel, "Beam Energy for Tagger Acceptance; Beam Energy(GeV/c^{2})",200,0,4.0))); 
-  
+
+  //Dalitz Plots Tests
+
+  // fOutput->Add(MapHist(new TH2F("OmegaDalitzTest1"+sLabel,"#omega to #pi^{-}#pi^{+}#pi^{0} Dalitz;#pi^{-}#pi^{0}(GeV/c^{2});#pi^{+}#pi^{0}(GeV/c^{2})",200,0,1,200,0,1)));
+  // fOutput->Add(MapHist(new TH2F("OmegaDalitzTest2"+sLabel,"#omega to #pi^{-}#pi^{+}#pi^{0} Dalitz;#pi^{-}#pi^{0}(GeV/c^{2});#pi^{+}#pi^{0}(GeV/c^{2})",200,0,1,200,0,1)));
+  // fOutput->Add(MapHist(new TH2F("OmegaDalitzTest3"+sLabel,"#omega to #pi^{-}#pi^{+}#pi^{0} Dalitz;#pi^{-}#pi^{0}(GeV/c^{2});#pi^{+}#pi^{0}(GeV/c^{2})",200,0,1,200,0,1)));
+  // fOutput->Add(MapHist(new TH2F("OmegaDalitzTest4"+sLabel,"#omega to #pi^{-}#pi^{+}#pi^{0} Dalitz;#pi^{-}#pi^{0}(GeV/c^{2});#pi^{+}#pi^{0}(GeV/c^{2})",200,0,1,200,0,1)));
+
+  //New Dalitz plot tests
+  fOutput->Add(MapHist(new TH2F("OmegaDalitzTestComb1NoCut"+sLabel,"Comb 1 #omega#pi^{-} vs #omega#pi^{+} Dalitz;#omega#pi^{-}(GeV/c^{2});#omega#pi^{+}(GeV/c^{2})",200,-1,3,200,-1,3)));
+  fOutput->Add(MapHist(new TH2F("OmegaDalitzTestComb2NoCut"+sLabel,"Comb 2 #omega#pi^{-} vs #omega#pi^{+} Dalitz;#omega#pi^{-}(GeV/c^{2});#omega#pi^{+}(GeV/c^{2})",200,-1,3,200,-1,3)));
+  fOutput->Add(MapHist(new TH2F("OmegaDalitzTestComb3NoCut"+sLabel,"Comb 3 #omega#pi^{-} vs #omega#pi^{+} Dalitz;#omega#pi^{-}(GeV/c^{2});#omega#pi^{+}(GeV/c^{2})",200,-1,3,200,-1,3)));
+  fOutput->Add(MapHist(new TH2F("OmegaDalitzTestComb4NoCut"+sLabel,"Comb 4 #omega#pi^{-} vs #omega#pi^{+} Dalitz;#omega#pi^{-}(GeV/c^{2});#omega#pi^{+}(GeV/c^{2})",200,-1,3,200,-1,3)));
+
+  // fOutput->Add(MapHist(new TH2F("OmegaDalitzTestComb1NoCutTest"+sLabel,"Comb 1 #omega#pi^{-} vs #omega#pi^{+} Dalitz;#omega#pi^{-}(GeV/c^{2});#omega#pi^{+}(GeV/c^{2})",200,-2,2,200,-2,2)));
+  // fOutput->Add(MapHist(new TH2F("OmegaDalitzTestComb2NoCutTest"+sLabel,"Comb 2 #omega#pi^{-} vs #omega#pi^{+} Dalitz;#omega#pi^{-}(GeV/c^{2});#omega#pi^{+}(GeV/c^{2})",200,-2,2,200,-2,2)));
+  // fOutput->Add(MapHist(new TH2F("OmegaDalitzTestComb3NoCutTest"+sLabel,"Comb 3 #omega#pi^{-} vs #omega#pi^{+} Dalitz;#omega#pi^{-}(GeV/c^{2});#omega#pi^{+}(GeV/c^{2})",200,-2,2,200,-2,2)));
+  // fOutput->Add(MapHist(new TH2F("OmegaDalitzTestComb4NoCutTest"+sLabel,"Comb 4 #omega#pi^{-} vs #omega#pi^{+} Dalitz;#omega#pi^{-}(GeV/c^{2});#omega#pi^{+}(GeV/c^{2})",200,-2,2,200,-2,2)));
+
+  fOutput->Add(MapHist(new TH2F("OmegaDalitzComb1"+sLabel,"Comb 1 #omega#pi^{-} vs #omega#pi^{+} Dalitz;#omega#pi^{-}(GeV/c^{2});#omega#pi^{+}(GeV/c^{2})",80,0.8,2.2,80,0.8,2.2)));
+  fOutput->Add(MapHist(new TH2F("OmegaDalitzComb2"+sLabel,"Comb 2 #omega#pi^{-} vs #omega#pi^{+} Dalitz;#omega#pi^{-}(GeV/c^{2});#omega#pi^{+}(GeV/c^{2})",80,0.8,2.2,80,0.8,2.2)));
+  fOutput->Add(MapHist(new TH2F("OmegaDalitzComb3"+sLabel,"Comb 3 #omega#pi^{-} vs #omega#pi^{+} Dalitz;#omega#pi^{-}(GeV/c^{2});#omega#pi^{+}(GeV/c^{2})",80,0.8,2.2,80,0.8,2.2)));
+  fOutput->Add(MapHist(new TH2F("OmegaDalitzComb4"+sLabel,"Comb 4 #omega#pi^{-} vs #omega#pi^{+} Dalitz;#omega#pi^{-}(GeV/c^{2});#omega#pi^{+}(GeV/c^{2})",80,0.8,2.2,80,0.8,2.2)));
+
   //end of histogram list
   TDirectory::AddDirectory(kTRUE); //back to normal
 }
@@ -473,6 +560,9 @@ void CLAStoHS::FillHistograms(TString sCut,Int_t bin) {
     FindHist("OmegaCandComb1Other2Pions"+sLabel)->Fill(fMissing->M(),fOmegaCand4->M()); //Other 2 pions with missing mass
     FindHist("OmegaCandComb1BeamEnergy"+sLabel)->Fill(fBeamEnergySelection->E(),fOmegaCand1->M());
     FindHist("OmegaCandComb1DeltaZ"+sLabel)->Fill(fOmegaCand1DeltaVertex.Z(),fOmegaCand1->M());
+    // FindHist("OmegaDalitzTest1"+sLabel)->Fill(fFastPiMPi0->M(),fFastPiPPi0->M()); //Dalitz Test
+    // FindHist("OmegaDalitzTestComb1"+sLabel)->Fill(fOmegaCand1->M2()+fPiMSlow1->M2(),fOmegaCand1->M2()+fPiPSlow3->M2());
+    FindHist("OmegaDalitzComb1"+sLabel)->Fill(fOmegaCand1PiMSlow1->M2(),fOmegaCand1PiPSlow3->M2());
   }
   else{
     FindHist("OmegaCandComb1NotSelected"+sLabel)->Fill(fMissing->M(),fOmegaCand1->M()); //Not selected region
@@ -485,6 +575,9 @@ void CLAStoHS::FillHistograms(TString sCut,Int_t bin) {
     FindHist("OmegaCandComb2Other2Pions"+sLabel)->Fill(fMissing->M(),fOmegaCand3->M()); //Other 2 pions with missing mass
     FindHist("OmegaCandComb2BeamEnergy"+sLabel)->Fill(fBeamEnergySelection->E(),fOmegaCand2->M());
     FindHist("OmegaCandComb2DeltaZ"+sLabel)->Fill(fOmegaCand2DeltaVertex.Z(),fOmegaCand2->M());
+    //  FindHist("OmegaDalitzTest2"+sLabel)->Fill(fFastPiMPi0->M(),fSlowPiPPi0->M()); //Dalitz Test
+    //  FindHist("OmegaDalitzTestComb2"+sLabel)->Fill(fOmegaCand2->M2()+fPiMSlow1->M2(),fOmegaCand1->M2()+fPiPFast2->M2());
+    FindHist("OmegaDalitzComb2"+sLabel)->Fill(fOmegaCand2PiMSlow1->M2(),fOmegaCand2PiPFast2->M2());
   }
   else{
     FindHist("OmegaCandComb2NotSelected"+sLabel)->Fill(fMissing->M(),fOmegaCand2->M()); //Not selected region
@@ -497,6 +590,9 @@ void CLAStoHS::FillHistograms(TString sCut,Int_t bin) {
     FindHist("OmegaCandComb3Other2Pions"+sLabel)->Fill(fMissing->M(),fOmegaCand2->M()); //Other 2 pions with missing mass
     FindHist("OmegaCandComb3BeamEnergy"+sLabel)->Fill(fBeamEnergySelection->E(),fOmegaCand3->M());
     FindHist("OmegaCandComb3DeltaZ"+sLabel)->Fill(fOmegaCand3DeltaVertex.Z(),fOmegaCand3->M());
+    // FindHist("OmegaDalitzTest3"+sLabel)->Fill(fSlowPiMPi0->M(),fFastPiPPi0->M()); //Dalitz Test
+    // FindHist("OmegaDalitzTestComb3"+sLabel)->Fill(fOmegaCand3->M2()+fPiMFast0->M2(),fOmegaCand1->M2()+fPiPSlow3->M2());
+    FindHist("OmegaDalitzComb3"+sLabel)->Fill(fOmegaCand3PiMFast0->M2(),fOmegaCand3PiPSlow3->M2());
   }
   else{
     FindHist("OmegaCandComb3NotSelected"+sLabel)->Fill(fMissing->M(),fOmegaCand3->M()); //Not selected region
@@ -509,6 +605,9 @@ void CLAStoHS::FillHistograms(TString sCut,Int_t bin) {
     FindHist("OmegaCandComb4Other2Pions"+sLabel)->Fill(fMissing->M(),fOmegaCand1->M()); //Other 2 pions with missing mass
     FindHist("OmegaCandComb4BeamEnergy"+sLabel)->Fill(fBeamEnergySelection->E(),fOmegaCand4->M());
     FindHist("OmegaCandComb4DeltaZ"+sLabel)->Fill(fOmegaCand4DeltaVertex.Z(),fOmegaCand4->M());
+    // FindHist("OmegaDalitzTest4"+sLabel)->Fill(fSlowPiMPi0->M(),fSlowPiPPi0->M()); //Dalitz Test
+    // FindHist("OmegaDalitzTestComb4"+sLabel)->Fill(fOmegaCand4->M2()+fPiMFast0->M2(),fOmegaCand1->M2()+fPiPFast2->M2());
+    FindHist("OmegaDalitzComb4"+sLabel)->Fill(fOmegaCand4PiMFast0->M2(),fOmegaCand4PiPFast2->M2());
   }
   else{
     FindHist("OmegaCandComb4NotSelected"+sLabel)->Fill(fMissing->M(),fOmegaCand4->M()); //Not selected region
@@ -569,9 +668,19 @@ void CLAStoHS::FillHistograms(TString sCut,Int_t bin) {
 
   FindHist("TaggerAcceptance"+sLabel)->Fill(fBeamEnergySelection->E());
   FindHist("TaggerAcceptance2"+sLabel)->Fill(fBeamEnergySelection->E());
+
+  //Dalitz Test Histograms
+ 
+  // FindHist("OmegaDalitzTestComb1NoCutTest"+sLabel)->Fill(fOmegaCand1->M2()+fPiMSlow1->M2(),fOmegaCand1->M2()+fPiPSlow3->M2());
+  // FindHist("OmegaDalitzTestComb2NoCutTest"+sLabel)->Fill(fOmegaCand2->M2()+fPiMSlow1->M2(),fOmegaCand1->M2()+fPiPFast2->M2());
+  // FindHist("OmegaDalitzTestComb3NoCutTest"+sLabel)->Fill(fOmegaCand3->M2()+fPiMFast0->M2(),fOmegaCand1->M2()+fPiPSlow3->M2());
+  // FindHist("OmegaDalitzTestComb4NoCutTest"+sLabel)->Fill(fOmegaCand4->M2()+fPiMFast0->M2(),fOmegaCand1->M2()+fPiPFast2->M2());
+
+  FindHist("OmegaDalitzTestComb1NoCut"+sLabel)->Fill(fOmegaCand1PiMSlow1->M2(),fOmegaCand1PiPSlow3->M2());
+  FindHist("OmegaDalitzTestComb2NoCut"+sLabel)->Fill(fOmegaCand2PiMSlow1->M2(),fOmegaCand2PiPFast2->M2());
+  FindHist("OmegaDalitzTestComb3NoCut"+sLabel)->Fill(fOmegaCand3PiMFast0->M2(),fOmegaCand3PiPSlow3->M2());
+  FindHist("OmegaDalitzTestComb4NoCut"+sLabel)->Fill(fOmegaCand4PiMFast0->M2(),fOmegaCand4PiPFast2->M2());
  }
-
-
 //Lorenzo Functions
 
 Double_t CLAStoHS::GetWeight(Double_t *par, Double_t x) {
@@ -580,7 +689,7 @@ Double_t CLAStoHS::GetWeight(Double_t *par, Double_t x) {
   // You will feed your weighted plots with  Fill(mass,GetWeight(par,mass)) for 1 dimension and Fill(whatever,mass,GetWeight(par,mass)) for 2 dimensions                             
   // Par need the one correct for this combination of particles                                                                                                                      
       
-  // TF1 *total = new TF1("total","pol3(0)+gaus(4)",0.63,0.95);
+   // TF1 *total = new TF1("total","pol3(0)+gaus(4)",0.63,0.95);
   total->SetParameters(par);
   // TF1 *g2    = new TF1("g2","gaus",0.74,0.82);
   g2->SetParameters(&par[5]);
