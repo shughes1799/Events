@@ -78,13 +78,21 @@ CLAStoHS::~CLAStoHS(){
 }
 void CLAStoHS::Begin(TTree * /*tree*/)
 {
-
+  
   TString option = GetOption();
   THSOutput::HSBegin(fInput,fOutput);
 }
 
 void CLAStoHS::SlaveBegin(TTree * /*tree*/)
 {
+  nTot       = 0;
+  nGoodOne   = 0;    
+  nGoodTwo   = 0;  
+  nGoodThree = 0;
+  nGoodFour  = 0;
+  nGoodFive  = 0;
+  nGoodSix   = 0;
+  
   TString option = GetOption();
   fStrParticles=option;
   //fStrParticles="pi+:pi+:pi-";
@@ -234,7 +242,44 @@ Bool_t CLAStoHS::Process(Long64_t entry)
   
   //Check if this event has the correct final state, see fFinalState
   /// if(!IsGoodEvent()) return kTRUE; //not the event we want so exit
-  if(!IsGoodEventGhosts()) return kTRUE; //not the event we want so exit
+  
+  nTot++;
+
+  // Testing DeltaT Function
+  DeltaT();
+  DeltaBeta();
+
+  cout << "Tof Measured " << tof_meas << endl;
+  cout << "Trigger Time " << tr_time << endl;
+  cout << "Tof Calculated " << tof_calc << endl;
+  cout << "Path Length " << sc_r[0] << endl;
+  cout << "Momentum " << p[0] << endl;
+  cout << "ID 0 " << id[0] << endl;
+  cout << "ID 1 " << id[1] << endl;
+  cout << "ID 2 " << id[2] << endl;
+  cout << "Status " << (double)stat[0] << endl;
+  cout << "Status " << (double)stat[1] << endl;
+  cout << "Status " << (double)stat[2] << endl;
+  cout << "Charge " << (double)q[0] << endl;
+  cout << "Charge " << (int)q[1] << endl;
+  cout << "Charge " << (int)q[2] << endl;
+  cout << "DeltaT[0] " << delta_tof[0] << endl;
+  cout << "DeltaT[1] " << delta_tof[1] << endl;
+  cout << "DeltaT[2] " << delta_tof[2] << endl;
+  cout << "Beta " << b[0] << endl;
+  cout << "Beta " << b[1] << endl;
+  cout << "Beta " << b[2] << endl;
+  cout << "Beta Meas " << beta_meas << endl;
+  cout << "Beta Calc " << beta_calc << endl;
+  cout << "DeltaB[0] " << delta_beta[0] << endl;
+  cout << "DeltaB[1] " << delta_beta[1] << endl;
+  cout << "DeltaB[2] " << delta_beta[2] << endl;
+  
+  if(!IsGoodEventGhosts())
+     return kTRUE; //not the event we want so exit
+
+ 
+    
   //check for a good photon
   GetEventPartBranches(entry); //get just the branches required
   //look for photons in 1.5ns window, note 2ns looks a bit too large a window
@@ -327,6 +372,14 @@ Bool_t CLAStoHS::Process(Long64_t entry)
 
 void CLAStoHS::SlaveTerminate()
 {
+  cout << endl;
+  cout << " nTot       = " << nTot     << endl; 
+  cout << " nGoodOne   = " << nGoodOne << endl;
+  cout << " nGoodTwo   = " << nGoodTwo << endl;
+  cout << " nGoodThree = " << nGoodThree << endl;
+  cout << " nGoodFour = " << nGoodFour << endl;
+  cout << " nGoodFive = " << nGoodFive << endl;
+  
   HSSlaveTerminate();
 }
 
@@ -344,10 +397,15 @@ Bool_t CLAStoHS::IsGoodEvent(){
   //only get branches used
   b_gpart->GetEntry(fEntry);
   if(gpart!=(Int_t)fNdet) return kFALSE;//only analyse event with correct final state
+  
+ 
+
   //Check the tracking status is OK for all tracks (Must need to apply an efficiency correction for this perhaps MC already does)
   b_stat->GetEntry(fEntry);
   for(UInt_t istat=0;istat<fNdet;istat++) if(stat[istat]<1) return kFALSE;
-
+  
+  
+  
   b_id->GetEntry(fEntry); //particle id branch
   //store the particle IDs in vector to compare with fFinalState
   vector<Int_t>EventState;
@@ -356,12 +414,15 @@ Bool_t CLAStoHS::IsGoodEvent(){
   std::sort(EventState.begin(),EventState.begin()+gpart);
   //now compare with the particles defined in fFinalState 
   if(!(std::equal(EventState.begin(),EventState.end(),fFinalState.begin()))) return kFALSE; // return if IDs are not those requested
-  else return kTRUE; //it is a good event
+  else{ 
+   
+    return kTRUE; //it is a good event
+  }
 }
 Bool_t CLAStoHS::IsGoodEventGhosts(){
   //this algorithm uses std::vec to compare the particle ids of the event
   //and those defined in fFinalState, event is good if they match
-
+nGoodOne++;
   //only get branches used
   b_gpart->GetEntry(fEntry);
   //  if(gpart!=(Int_t)fNdet) return kFALSE;//only analyse event with correct final state
@@ -376,12 +437,24 @@ Bool_t CLAStoHS::IsGoodEventGhosts(){
   for(UInt_t ifs=0;ifs<gpart;ifs++) {
     if(stat[ifs]>0) {EventState.push_back(id[ifs]);nreal++;}
   }
+
+nGoodTwo++;
+
   if(nreal!=(Int_t)fNdet) return kFALSE;//only analyse event with correct final state
+
+ nGoodThree++;
   //put in order for comparison with requested fFinalState
   std::sort(EventState.begin(),EventState.begin()+nreal);
   //now compare with the particles defined in fFinalState 
-  if(!(std::equal(EventState.begin(),EventState.end(),fFinalState.begin()))) return kFALSE; // return if IDs are not those requested
-  else return kTRUE; //it is a good event
+  if(!(std::equal(EventState.begin(),EventState.end(),fFinalState.begin()))){
+    nGoodFour++;
+ return kFALSE; // return if IDs are not those requested
+  }
+  else{
+ nGoodFive++;
+ return kTRUE; //it is a good event
+  }
+  nGoodSix++;
 }
 
 
@@ -444,7 +517,7 @@ void CLAStoHS::HistogramList(TString sLabel){
   // e.g fOutput->Add(MapHist(new TH1F("Mp1"+sLabel,"M_{p1}"+sLabel,100,0,2)));
   
   //Simon Histograms
-  fOutput->Add(MapHist(new TH2F("histo_n11"+sLabel,"Missing Mass vs #omega MassCand1;Missing Mass(GeV/c^{2});#omega Candidate Mass(GeV/c^{2})",50,0.05,0.20,50,0.4,1.0)));			    
+  fOutput->Add(MapHist(new TH2F("histo_n11"+sLabel,"Missing Mass vs #omega MassCand1;Missing Mass(GeV/c^{2});#omega Candidate Mass(GeV/c^{2})",200,-0.2,1.20,200,0.0,2.0)));			    
   fOutput->Add(MapHist(new TH2F("histo_n12"+sLabel,"Missing Mass vs #omega MassCand2;Missing Mass(GeV/c^{2});#omega Candidate Mass(GeV/c^{2})",50,0.05,0.20,50,0.4,1.0)));
   fOutput->Add(MapHist(new TH2F("histo_n13"+sLabel,"Missing Mass vs #omega MassCand3;Missing Mass(GeV/c^{2});#omega Candidate Mass(GeV/c^{2})",50,0.05,0.20,50,0.4,1.0)));
   fOutput->Add(MapHist(new TH2F("histo_n14"+sLabel,"Missing Mass vs #omega MassCand4;Missing Mass(GeV/c^{2});#omega Candidate Mass(GeV/c^{2})",50,0.05,0.20,50,0.4,1.0)));
@@ -532,7 +605,60 @@ void CLAStoHS::HistogramList(TString sLabel){
   fOutput->Add(MapHist(new TH2F("OmegaDalitzComb3"+sLabel,"Comb 3 #omega#pi^{-} vs #omega#pi^{+} Dalitz;#omega#pi^{-}(GeV/c^{2});#omega#pi^{+}(GeV/c^{2})",80,0.8,2.2,80,0.8,2.2)));
   fOutput->Add(MapHist(new TH2F("OmegaDalitzComb4"+sLabel,"Comb 4 #omega#pi^{-} vs #omega#pi^{+} Dalitz;#omega#pi^{-}(GeV/c^{2});#omega#pi^{+}(GeV/c^{2})",80,0.8,2.2,80,0.8,2.2)));
 
-  //end of histogram list
+
+  //Delta T Histograms
+  fOutput->Add(MapHist(new TH1D("DeltaT"+sLabel,"#Delta T Proton,#pi^{+} and #pi^{-}; #Delta T(ns)",1000,-50,120)));
+  fOutput->Add(MapHist(new TH1D("DeltaTPro"+sLabel,"#Delta T Proton; #Delta T(ns)",1000,-50,120)));
+  fOutput->Add(MapHist(new TH1D("DeltaTPiP"+sLabel,"#Delta T #pi^{+}; #Delta T(ns)",1000,-50,120)));
+  fOutput->Add(MapHist(new TH1D("DeltaTPiM"+sLabel,"#Delta T #pi^{-}; #Delta T(ns)",1000,-50,120)));
+
+  //DeltaT vs Momentum for particles
+  // fOutput->Add(MapHist(new TH2D("DeltaTProvsMom"+sLabel,"#Delta T Proton vs P;Proton #Delta T(ns); P (GeV)",200,-20,20,200,0,4)));
+  // fOutput->Add(MapHist(new TH2D("DeltaTPiP1vsMom"+sLabel,"#Delta T PiP1 vs P;PiP1 #Delta T(ns); P (GeV)",200,-20,20,200,0,2)));
+  // fOutput->Add(MapHist(new TH2D("DeltaTPiP2vsMom"+sLabel,"#Delta T PiP2 vs P;PiP2 #Delta T(ns); P (GeV)",200,-20,20,200,0,2)));
+  // fOutput->Add(MapHist(new TH2D("DeltaTPiM1vsMom"+sLabel,"#Delta T PiM1 vs P;PiM1 #Delta T(ns); P (GeV)",200,-20,20,200,0,2)));
+  // fOutput->Add(MapHist(new TH2D("DeltaTPiM2vsMom"+sLabel,"#Delta T PiM2 vs P;PiM2 #Delta T(ns); P (GeV)",200,-20,20,200,0,2)));
+
+  fOutput->Add(MapHist(new TH2D("DeltaTMomvsPro"+sLabel,"P vs #Delta T Proton;P (GeV); Proton #Delta T(ns)",200,0,4,200,-20,20)));
+  fOutput->Add(MapHist(new TH2D("DeltaTMomvsPiP1"+sLabel,"P vs #Delta T #pi^{+}1;#pi^{+}1 #Delta T(ns);P (GeV)",200,0,4,200,-20,20)));
+  fOutput->Add(MapHist(new TH2D("DeltaTMomvsPiP2"+sLabel,"P vs #Delta T #pi^{+}2;#pi^{+}2 #Delta T(ns);P (GeV)",200,0,4,200,-20,20)));
+  fOutput->Add(MapHist(new TH2D("DeltaTMomvsPiM1"+sLabel,"P vs #Delta T #pi^{-}1;#pi^{-}1 #Delta T(ns);P (GeV)",200,0,4,200,-20,20)));
+  fOutput->Add(MapHist(new TH2D("DeltaTMomvsPiM2"+sLabel,"P vs #Delta T #pi^{-}2;#pi^{-}2 #Delta T(ns);P (GeV)",200,0,4,200,-20,20)));
+
+  
+  //DeltaT one particle vs another
+  fOutput->Add(MapHist(new TH2D("DeltaTProPiP1"+sLabel,"#Delta T Proton vs #pi^{+}1;Proton #Delta T(ns); #pi^{+}1 #Delta T (ns)",200,-20,20,200,-20,20)));
+  fOutput->Add(MapHist(new TH2D("DeltaTProPiP2"+sLabel,"#Delta T Proton vs #pi^{+}2;Proton #Delta T(ns); #pi^{+}2 #Delta T (ns)",200,-20,20,200,-20,20)));
+  
+  fOutput->Add(MapHist(new TH2D("DeltaTProPiM1"+sLabel,"#Delta T Proton vs #pi^{-}1;Proton #Delta T(ns); #pi^{-}1 #Delta T (ns)",200,-20,20,200,-20,20)));
+  fOutput->Add(MapHist(new TH2D("DeltaTProPiM2"+sLabel,"#Delta T Proton vs #pi^{-}2;Proton #Delta T(ns); #pi^{-}2 #Delta T (ns)",200,-20,20,200,-20,20)));
+
+  fOutput->Add(MapHist(new TH2D("DeltaTPiP1PiP2"+sLabel,"#Delta T #pi^{+}1 vs #pi^{+}2; #pi^{+}1 #Delta T(ns); #pi^{+}2 #Delta T (ns)",200,-20,20,200,-20,20)));
+  fOutput->Add(MapHist(new TH2D("DeltaTPiM1PiM2"+sLabel,"#Delta T #pi^{-}1 vs #pi^{-}2; #pi^{-}1 #Delta T(ns); #pi^{-}2 #Delta T (ns)",200,-20,20,200,-20,20)));
+  fOutput->Add(MapHist(new TH2D("DeltaTPiP1PiM2"+sLabel,"#Delta T #pi^{+}1 vs #pi^{-}2; #pi^{+}1 #Delta T(ns); #pi^{-}2 #Delta T (ns)",200,-20,20,200,-20,20)));
+  fOutput->Add(MapHist(new TH2D("DeltaTPiM1PiP2"+sLabel,"#Delta T #pi^{-}1 vs #pi^{+}2; #pi^{-}1 #Delta T(ns); #pi^{+}2 #Delta T (ns)",200,-20,20,200,-20,20)));
+
+
+  //DeltaBeta Histograms
+  fOutput->Add(MapHist(new TH1D("DeltaB"+sLabel,"#Delta B Proton,#pi^{+} and #pi^{-}; #Delta B",1000,-0.6,0.6)));
+  fOutput->Add(MapHist(new TH1D("DeltaBPro"+sLabel,"#Delta B Proton; #Delta T",1000,-0.6,0.6)));
+  fOutput->Add(MapHist(new TH1D("DeltaBPiP"+sLabel,"#Delta B #pi^{+}; #Delta T",1000,-0.6,0.6)));
+  fOutput->Add(MapHist(new TH1D("DeltaBPiM"+sLabel,"#Delta B #pi^{-}; #Delta T",1000,-0.6,0.6)));
+
+  // fOutput->Add(MapHist(new TH2D("DeltaBProvsMom"+sLabel,"#Delta B Proton vs P;Proton #Delta B; P (GeV)",200,-0.6,0.6,200,0,4)));
+  // fOutput->Add(MapHist(new TH2D("DeltaBPiP1vsMom"+sLabel,"#Delta B PiP1 vs P;PiP1 #Delta B; P (GeV)",200,-0.6,0.6,200,0,2)));
+  // fOutput->Add(MapHist(new TH2D("DeltaBPiP2vsMom"+sLabel,"#Delta B PiP2 vs P;PiP2 #Delta B; P (GeV)",200,-0.6,0.6,200,0,2)));
+  // fOutput->Add(MapHist(new TH2D("DeltaBPiM1vsMom"+sLabel,"#Delta B PiM1 vs P;PiM1 #Delta B; P (GeV)",200,-0.6,0.6,200,0,2)));
+  // fOutput->Add(MapHist(new TH2D("DeltaBPiM2vsMom"+sLabel,"#Delta B PiM2 vs P;PiM2 #Delta B; P (GeV)",200,-0.6,0.6,200,0,2)));
+
+  fOutput->Add(MapHist(new TH2D("DeltaBMomvsPro"+sLabel,"P vs #Delta B Proton;P (GeV); Proton #Delta T(ns)",200,0,4,200,-0.6,0.6)));
+  fOutput->Add(MapHist(new TH2D("DeltaBMomvsPiP1"+sLabel,"P vs #Delta B #pi^{+}1;#pi^{+}1 #Delta T(ns);P (GeV)",200,0,2,200,-0.6,0.6)));
+  fOutput->Add(MapHist(new TH2D("DeltaBMomvsPiP2"+sLabel,"P vs #Delta B #pi^{+}2;#pi^{+}2 #Delta T(ns);P (GeV)",200,0,2,200,-0.6,0.6)));
+  fOutput->Add(MapHist(new TH2D("DeltaBMomvsPiM1"+sLabel,"P vs #Delta B #pi^{-}1;#pi^{-}1 #Delta T(ns);P (GeV)",200,0,2,200,-0.6,0.6)));
+  fOutput->Add(MapHist(new TH2D("DeltaBMomvsPiM2"+sLabel,"P vs #Delta B #pi^{-}2;#pi^{-}2 #Delta T(ns);P (GeV)",200,0,2,200,-0.6,0.6)));
+
+
+//end of histogram list
   TDirectory::AddDirectory(kTRUE); //back to normal
 }
 void CLAStoHS::FillHistograms(TString sCut,Int_t bin) {
@@ -680,7 +806,126 @@ void CLAStoHS::FillHistograms(TString sCut,Int_t bin) {
   FindHist("OmegaDalitzTestComb2NoCut"+sLabel)->Fill(fOmegaCand2PiMSlow1->M2(),fOmegaCand2PiPFast2->M2());
   FindHist("OmegaDalitzTestComb3NoCut"+sLabel)->Fill(fOmegaCand3PiMFast0->M2(),fOmegaCand3PiPSlow3->M2());
   FindHist("OmegaDalitzTestComb4NoCut"+sLabel)->Fill(fOmegaCand4PiMFast0->M2(),fOmegaCand4PiPFast2->M2());
- }
+ 
+
+  DeltaT_PiP1 = 110;
+  DeltaT_PiP2 = 110;
+  DeltaT_Proton = 100;
+  DeltaT_PiM1 = 90;
+  DeltaT_PiM2 = 90;
+
+  //DeltaT
+  for(Int_t dt = 0; dt < gpart; dt++){
+
+    if(stat[dt] <= 0){
+      continue;
+    }
+    FindHist("DeltaT"+sLabel)->Fill(delta_tof[dt]);
+    
+    if(id[dt] == 2212){
+      FindHist("DeltaTPro"+sLabel)->Fill(delta_tof[dt]);
+      DeltaT_Proton = delta_tof[dt];
+      FindHist("DeltaTMomvsPro"+sLabel)->Fill(p[dt],DeltaT_Proton);
+    }
+    if(id[dt] == 211){
+      FindHist("DeltaTPiP"+sLabel)->Fill(delta_tof[dt]);
+      
+      if(DeltaT_PiP1 == 110){
+	DeltaT_PiP1 = delta_tof[dt];
+	FindHist("DeltaTMomvsPiP1"+sLabel)->Fill(p[dt],DeltaT_PiP1);
+      }
+      else if(DeltaT_PiP1 != 110){
+	DeltaT_PiP2 = delta_tof[dt];
+	FindHist("DeltaTMomvsPiP2"+sLabel)->Fill(p[dt],DeltaT_PiP2);
+      }
+    }
+    if(id[dt] == -211){
+      FindHist("DeltaTPiM"+sLabel)->Fill(delta_tof[dt]);
+      
+      if(DeltaT_PiM1 == 90){
+	DeltaT_PiM1 = delta_tof[dt];
+	FindHist("DeltaTMomvsPiM1"+sLabel)->Fill(p[dt],DeltaT_PiM1);
+      }
+      else if(DeltaT_PiM1 != 90){
+	DeltaT_PiM2 = delta_tof[dt];
+	FindHist("DeltaTMomvsPiM2"+sLabel)->Fill(p[dt],DeltaT_PiM2);
+      }
+    }
+  }
+
+ 
+
+  FindHist("DeltaTProPiP1"+sLabel)->Fill(DeltaT_Proton,DeltaT_PiP1);
+  FindHist("DeltaTProPiP2"+sLabel)->Fill(DeltaT_Proton,DeltaT_PiP2);
+
+  FindHist("DeltaTProPiM1"+sLabel)->Fill(DeltaT_Proton,DeltaT_PiM1);
+  FindHist("DeltaTProPiM2"+sLabel)->Fill(DeltaT_Proton,DeltaT_PiM2);
+
+  FindHist("DeltaTPiP1PiP2"+sLabel)->Fill(DeltaT_PiP1,DeltaT_PiP2);
+  FindHist("DeltaTPiM1PiM2"+sLabel)->Fill(DeltaT_PiM1,DeltaT_PiM2);
+  FindHist("DeltaTPiP1PiM2"+sLabel)->Fill(DeltaT_PiP1,DeltaT_PiM2);
+  FindHist("DeltaTPiM1PiP2"+sLabel)->Fill(DeltaT_PiM1,DeltaT_PiP2);
+
+
+  DeltaT_PiP1 = 110;
+  DeltaT_PiP2 = 110;
+  DeltaT_Proton = 100;
+  DeltaT_PiM1 = 90;
+  DeltaT_PiM2 = 90;
+
+  DeltaB_PiP1 = 110;
+  DeltaB_PiP2 = 110;
+  DeltaB_Proton = 100;
+  DeltaB_PiM1 = 90;
+  DeltaB_PiM2 = 90;
+
+ //DeltaBeta
+  for(Int_t db = 0; db < gpart; db++){
+
+    if(stat[db] <= 0){
+      continue;
+    }
+    FindHist("DeltaB"+sLabel)->Fill(delta_beta[db]);
+    
+    if(id[db] == 2212){
+      FindHist("DeltaBPro"+sLabel)->Fill(delta_beta[db]);
+      DeltaB_Proton = delta_beta[db];
+      FindHist("DeltaBMomvsPro"+sLabel)->Fill(p[db],DeltaB_Proton);
+    }
+    if(id[db] == 211){
+      FindHist("DeltaBPiP"+sLabel)->Fill(delta_beta[db]);
+      
+      if(DeltaB_PiP1 == 110){
+	DeltaB_PiP1 = delta_beta[db];
+	FindHist("DeltaBMomvsPiP1"+sLabel)->Fill(p[db],DeltaB_PiP1);
+      }
+      else if(DeltaB_PiP1 != 110){
+	DeltaB_PiP2 = delta_beta[db];
+	FindHist("DeltaBMomvsPiP2"+sLabel)->Fill(p[db],DeltaB_PiP2);
+      }
+    }
+    if(id[db] == -211){
+      FindHist("DeltaBPiM"+sLabel)->Fill(delta_beta[db]);
+      
+      if(DeltaB_PiM1 == 90){
+	DeltaB_PiM1 = delta_beta[db];
+	FindHist("DeltaBMomvsPiM1"+sLabel)->Fill(p[db],DeltaB_PiM1);
+      }
+      else if(DeltaB_PiM1 != 90){
+	DeltaB_PiM2 = delta_beta[db];
+	FindHist("DeltaBMomvsPiM2"+sLabel)->Fill(p[db],DeltaB_PiM2);
+      }
+    }
+  }
+
+  DeltaB_PiP1 = 110;
+  DeltaB_PiP2 = 110;
+  DeltaB_Proton = 100;
+  DeltaB_PiM1 = 90;
+  DeltaB_PiM2 = 90;
+
+}
+
 //Lorenzo Functions
 
 Double_t CLAStoHS::GetWeight(Double_t *par, Double_t x) {
@@ -722,4 +967,178 @@ void CLAStoHS::GetEventPartBranches(Int_t evi){
   b_tag_energy->GetEvent(evi);
   b_dt_st_tag->GetEvent(evi);
   b_vertex_time->GetEvent(evi);
+}
+
+Double_t* CLAStoHS::DeltaT(){
+
+  b_sc->GetEntry(fEntry); // Variable describing which bit of the array of each event information is refering to.
+  b_sc_t->GetEntry(fEntry);  //start counter time from ToF paddles, measured with respect to the trigger to tr_time
+  b_sc_r->GetEntry(fEntry); //The flight path of each particle (Path length?)
+
+  b_tr_time->GetEntry(fEntry); //The trigger time, or event start time, choice of trigger electron is reconstructed from those available before my code.
+
+  b_p->GetEntry(fEntry); //momentum p for each particle
+  b_id->GetEntry(fEntry); //ntuple ID for each particle
+  b_q->GetEntry(fEntry); //ntuple charge for each particle
+  b_b->GetEntry(fEntry); //beta measured
+
+  b_gpart->GetEntry(fEntry); //number of particle by gpart method
+  b_stat->GetEntry(fEntry); //wether the particle is a valid track, if 0 
+
+
+  //Things to be added
+  //If statement looking at the charge on a particle
+  //IDing, Pi+, Pi-, then eventually general
+  //Getting expected masses directly from PDG lookup possible?
+  //Allow for variable 
+  //Function should accept or reject and correct IDs before passing to is good event ghosts.
+
+   //Delta t, difference between the predicted and measured 
+  
+  // tof_meas = sc_t; //Time difference between the interaction vertex and the ToF scintilation paddles
+  
+  // tof_calc = (sc_r/c)*(1 + (mass/p)^2)^0.5  //formula for tof_calc, from mike williams thesis
+  tof_meas = 0;
+  tof_calc = 0;
+
+
+  for(UChar_t ifs=0;ifs<gpart;ifs++){  //looping over the values of gpart in each entry
+   tof_meas = 0;
+   tof_calc = 0;
+   delta_tof[ifs] = 0;
+   //Need to correlate gpart with sc entries
+
+   // if(stat[ifs] <= 0){
+   //  continue;
+   //	}
+
+   tof_meas = sc_t[sc[ifs]]-tr_time; //sc_t is measured relative to the trigger time tr, so this must be subtracted. 
+
+   // tof_meas = (sc_t[sc[ifs]]-tr_time)/ b[ifs];  //updated version correcting for momentum. Might be wrong
+    
+    //need some if statements to consider different cases.
+
+    // SC correlates gpart blocks to SC ones.
+
+   if((int)q[ifs] == 1){
+     //The 29.9792458 is speed of light per 100 nanoseconds to match units with cm and ns.
+     if(id[ifs] == 2212){
+       tof_calc = (sc_r[sc[ifs]]/29.9792458)*TMath::Sqrt((1 + TMath::Power(((0.938272046)/(p[ifs])),2))); 
+     }
+     else if(id[ifs] == 211){
+       tof_calc = (sc_r[sc[ifs]]/29.9792458)*TMath::Sqrt((1 + TMath::Power(((0.13957018)/(p[ifs])),2)));
+     }
+     else{
+       delta_tof[ifs] = 110;
+       continue;
+	 }    
+   }
+   else if((int)q[ifs] == -1){
+     if(id[ifs]== -211){
+       tof_calc = (sc_r[sc[ifs]]/29.9792458)*TMath::Sqrt((1 + TMath::Power(((0.13957018)/(p[ifs])),2)));
+     }
+     else{
+       delta_tof[ifs] = 90;
+       continue;
+     }
+   }
+   else if((int)q[ifs] == 0){
+     delta_tof[ifs] = 100;
+     continue;
+   }
+   else{
+     delta_tof[ifs] = 115;
+     continue;
+   }
+   delta_tof[ifs] = tof_meas - tof_calc; 
+  }
+  return delta_tof;
+  
+}
+
+
+Double_t* CLAStoHS::DeltaBeta(){
+
+  b_sc->GetEntry(fEntry); // Variable describing which bit of the array of each event information is refering to.
+  b_sc_t->GetEntry(fEntry);  //start counter time from ToF paddles, measured with respect to the trigger to tr_time
+  b_sc_r->GetEntry(fEntry); //The flight path of each particle (Path length?)
+
+  b_tr_time->GetEntry(fEntry); //The trigger time, or event start time, choice of trigger electron is reconstructed from those available before my code.
+
+  b_p->GetEntry(fEntry); //momentum p for each particle
+  b_id->GetEntry(fEntry); //ntuple ID for each particle
+  b_q->GetEntry(fEntry); //ntuple charge for each particle
+  b_b->GetEntry(fEntry); //beta measured
+
+  b_gpart->GetEntry(fEntry); //number of particle by gpart method
+  b_stat->GetEntry(fEntry); //wether the particle is a valid track, if 0 
+
+  
+  // tof_meas = sc_t; //Time difference between the interaction vertex and the ToF scintilation paddles
+  
+  // tof_calc = (sc_r/c)*(1 + (mass/p)^2)^0.5  //formula for tof_calc, from mike williams thesis
+  beta_meas = 0;
+  beta_calc = 0;
+  Mass_Proton = 0.938272046;  // from pdg
+  Mass_Pion   = 0.13957018;    // from pdg
+  
+  
+  for(UChar_t idb=0;idb<gpart;idb++){  //looping over the values of gpart in each entry
+   beta_meas = 0;
+   beta_calc = 0;
+   delta_beta[idb] = 0;
+   
+
+   //Need to correlate gpart with sc entries
+
+   
+   // if(stat[ifs] <= 0){
+   // continue;
+   //	}
+
+   beta_meas = b[idb];
+    //need some if statements to consider different cases.
+
+    // SC correlates gpart blocks to SC ones.
+
+   if((int)q[idb] == 1){
+     //  The 0.299792458 is speed of light in meters per nanosecond
+     
+     //  sqrt (P^2c^2/m^2c^4+p^2c^2)
+     
+     if(id[idb] == 2212){
+       //  beta_calc =  TMath::Sqrt(   (TMath::Power(p[idb],2)*TMath::Power(0.299792458,2)) / ((TMath::Power(Mass_Proton,2)*TMath::Power(0.299792458,4))+(TMath::Power(p[idb],2)*TMath::Power(0.299792458,2)) )   );
+       beta_calc = TMath::Sqrt((p[idb]*p[idb])/((Mass_Proton*Mass_Proton)+(p[idb]*p[idb])));
+     }
+     else if(id[idb] == 211){
+       // beta_calc = TMath::Sqrt(   (  TMath::Power(p[idb],2)*TMath::Power(0.299792458,2)  ) / (  TMath::Power(Mass_Pion,2)*TMath::Power(0.299792458,4)+TMath::Power(p[idb],2)*TMath::Power(0.299792458,2) )   );
+       beta_calc = TMath::Sqrt((p[idb]*p[idb])/((Mass_Pion*Mass_Pion)+(p[idb]*p[idb])));
+     }
+     else{
+       delta_beta[idb] = 110;
+       continue;
+     }    
+   }
+   else if((int)q[idb] == -1){
+     if(id[idb]== -211){
+       // beta_calc = TMath::Sqrt(   (  TMath::Power(p[idb],2)*TMath::Power(0.299792458,2)  ) / (  TMath::Power(Mass_Pion,2)*TMath::Power(0.299792458,4)+TMath::Power(p[idb],2)*TMath::Power(0.299792458,2) )   );
+       beta_calc = TMath::Sqrt((p[idb]*p[idb])/((Mass_Pion*Mass_Pion)+(p[idb]*p[idb])));
+     }
+     else{
+       delta_beta[idb] = 90;
+       continue;
+     }
+   }
+   else if((int)q[idb] == 0){
+     delta_beta[idb] = 100;
+     continue;
+   }
+   else{
+     delta_beta[idb] = 115;
+     continue;
+   }
+   delta_beta[idb] = beta_meas - beta_calc; 
+  }
+  return delta_beta;
+  
 }

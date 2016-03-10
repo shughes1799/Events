@@ -72,6 +72,8 @@ class CLAStoHS : public TSelector, public  THSOutput {
 
   //Simon Functions
   Double_t GetWeight(Double_t *par, Double_t x); //Weighting histograms based on function parameters
+  Double_t* DeltaT(); //Calculating DeltaT for particle ID
+  Double_t* DeltaBeta(); //Calculating DeltaBeta for particle ID
 
  public :
   TTree          *fChain;   //!pointer to the analyzed TTree or TChain
@@ -80,9 +82,18 @@ class CLAStoHS : public TSelector, public  THSOutput {
   TF1* total;
   TF1* g2;
 
+  
+  //Gary's Junk
+  UInt_t nTot;
+  UInt_t nGoodOne;  
+  UInt_t nGoodTwo;  
+  UInt_t nGoodThree;
+  UInt_t nGoodFour;
+  UInt_t nGoodFive;
+  UInt_t nGoodSix;
 
   //Variables controlling the selection cuts on particles on interest for the different combinations of pions
-  
+
   //General
   Float_t MissingMCLow;
   Float_t MissingMCHigh;
@@ -137,6 +148,34 @@ class CLAStoHS : public TSelector, public  THSOutput {
   Double_t OmegaComb2Par[8];
   Double_t OmegaComb3Par[8];
   Double_t OmegaComb4Par[8];
+
+ //DeltaT Variables
+  Double_t tof_meas;
+  Double_t tof_calc;
+  Double_t delta_tof[20];
+
+  Double_t DeltaT_PiP1;
+  Double_t DeltaT_PiP2;
+  Double_t DeltaT_Proton;
+  Double_t DeltaT_PiM1;
+  Double_t DeltaT_PiM2;
+
+  //DeltaB variables
+
+  Double_t beta_meas;
+  Double_t beta_calc;
+  Double_t delta_beta[20];
+
+  Double_t DeltaB_PiP1;
+  Double_t DeltaB_PiP2;
+  Double_t DeltaB_Proton;
+  Double_t DeltaB_PiM1;
+  Double_t DeltaB_PiM2;
+
+  Double_t Mass_Proton;
+  Double_t Mass_Pion;
+
+
 
   // Declaration of leaf types
   UShort_t        run_num;
