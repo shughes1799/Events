@@ -632,13 +632,19 @@ void UseSWeight(){
   lines->AddAt(new TObjString("   //This will have been produced by the THS_sWeight macro"),place++); 
   lines->AddAt(new TObjString("   TDirectory* savedir=gDirectory;"),place++); 
   lines->AddAt(new TObjString("   fSWFile=new TFile(option);//take the filename from the tree->Process() option"),place++); 
-  lines->AddAt(new TObjString("   fsPlotList=(TObjArray*)fSWFile->Get(\"HSsPlots\");//List should have name HSsPlots"),place++); 
-  lines->AddAt(new TObjString("   if(!fsPlotList){cerr<<\"Sorry no sPlots found in SlaveBegin, exiting\"<<endl;exit(0);}"),place++); 
+  lines->AddAt(new TObjString("   TDirectory* SPdir=fSWFile->GetDirectory(\"HSsPlots\");"),place++); 
+  lines->AddAt(new TObjString("   if(!SPdir){cerr<<\"Sorry no sPlots found in SlaveBegin, exiting\"<<endl;exit(0);}"),place++); 
+  lines->AddAt(new TObjString("   fsPlotList=new TObjArray();"),place++); 
+  lines->AddAt(new TObjString("   for(Int_t ik=0;ik<SPdir->GetNkeys();ik++){"),place++); 
+  lines->AddAt(new TObjString("     cout<<SPdir->GetListOfKeys()->At(ik)->GetName() <<endl;"),place++); 
+  lines->AddAt(new TObjString("     fsPlotList->Add(SPdir->Get(SPdir->GetListOfKeys()->At(ik)->GetName()));"),place++); 
+  lines->AddAt(new TObjString("   }"),place++); 
+  lines->AddAt(new TObjString("  cout<<\" LIST \"<<fsPlotList->GetEntries()<<endl; "),place++); 
   lines->AddAt(new TObjString("   fSEntry.assign(fsPlotList->GetEntries(),0);//initiate kinematic bin counters"),place++); 
   lines->AddAt(new TObjString("   fSWKinBins=(TH1*)fSWFile->Get(\"HSsPlotsBins\");//get histogram defining SW bins"),place++); 
   lines->AddAt(new TObjString("   savedir->cd();"),place++); 
   lines->AddAt(new TObjString("   fSWBin=0;"),place++); 
-
+  
   //Process, get the sWEights from the sPlots
 
   obj=macroC.GetLineWith( "//Ready to do some analysis here, before the Fill");

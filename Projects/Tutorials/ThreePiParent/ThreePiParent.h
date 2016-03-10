@@ -91,6 +91,7 @@ Bool_t ThreePiParent::Notify()
    // to the generated code, but the routine can be extended by the
    // user if needed. The return value is currently not used.
    THSOutput::HSNotify(fChain);
+   THSOutput::InitOutTree();
    THSOutput::InitParent(fChain,"HSStep_1");
    fParent.Init(fParentTree);
 

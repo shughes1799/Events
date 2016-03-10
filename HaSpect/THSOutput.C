@@ -336,22 +336,23 @@ void THSOutput::InitParent(TTree* ctree,TString step){
   // exit(1);
   //get the entry list of the parent from te file of the current tree
   TFile* infile=ctree->GetCurrentFile();
-  cout<<infile->GetName()<<endl;
+  if(fParEntryLists)cout<<infile->GetName()<<" "<<fParEntryLists->GetEntries()<<endl;
   //Get the chain of entry lists leading to the selected parent list
   //This allows determination of the parent entry number if several
   //sequences of filtering have been performed
   TString tempstep=step; //"e.g. Step_2/Step_1/Step_0
   TEntryList* oldel=0;
   tempstep+="/temp";
-  if(!fParEntryLists) fParEntryLists=new TList();
+  if(!fParEntryLists) {fParEntryLists=new TList();}
   else fParEntryLists->Clear();
+  // if(!fParEntryLists) fParEntryLists=new TList();
+  // else {SafeDelete( fParEntryLists); fParEntryLists=new TList();}
   while ((tempstep=gSystem->DirName(tempstep))){//loop through step directories
    if(tempstep==".") break;
    cout<<tempstep<<endl;
    TEntryList* el=(TEntryList*)infile->Get(tempstep+"/HSelist");
    cout<<el->GetN()<<endl;
-   if(oldel) if(oldel->GetN()==el->GetN())
-	       continue;//no need to add as contains the same entries
+   if(oldel) if(oldel->GetN()==el->GetN()) continue;//no need to add as contains the same entries
    fParEntryLists->Add(el);//Add to list of entry lists
    cout<<"Added list "<<fParEntryLists->GetEntries()<<endl;
    oldel=el;

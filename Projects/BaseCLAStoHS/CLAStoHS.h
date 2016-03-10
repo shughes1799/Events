@@ -671,7 +671,10 @@ Bool_t CLAStoHS::Notify()
    //Use THSOutput functions to look after files
   THSOutput::HSNotify(fChain);
   THSOutput::InitOutTree();
+THSOutput::InitOutTree();
 
+=======
+>>>>>>> 029c20cf419a21b73ebef4611a2d6cb23d13202c
    return kTRUE;
 }
 
