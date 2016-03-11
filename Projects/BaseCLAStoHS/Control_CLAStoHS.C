@@ -39,13 +39,13 @@
   //Testing skims
 
   // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/skims2016/data_filtered.root");
-  tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/skims2016/tighterfilter3.root");
+  tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/skims2016/tighterfilter4.root");
 
   //Set the ouput directory or file (if full file name is given just 1 file is created, while if a directory it will be created and filled with files of the same name as the input 
   // gSystem->Setenv("HSOUT",
   //		   "/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HS/");
 
-  gSystem->Setenv("HSOUT", "/phys/linux/s0677668/Haspect/OmegaPiPPiMPDataPortion/2016/Feb/RealData/NewSkim5runsTight3MissOmega2.root");
+  gSystem->Setenv("HSOUT", "/phys/linux/s0677668/Haspect/OmegaPiPPiMPDataPortion/2016/Feb/RealData/NewSkim5runsTight4MissOmega1.root");
 
   // gSystem->Setenv("HSOUT", "/phys/linux/s0677668/Haspect/OmegaPiPPiMPDataPortion/2016/Feb/PhaseS/DeltaBeta1milEvents4.root");
   // gSystem->Setenv("HSOUT", "/phys/linux/s0677668/Haspect/OmegaPiPPiMPDataPortion/2016/Feb/PhaseS/DeltaB3.root");
