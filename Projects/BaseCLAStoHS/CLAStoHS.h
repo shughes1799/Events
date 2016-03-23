@@ -21,6 +21,9 @@
 
 #include "THSOutput.h"
 
+
+
+
 // Header file for the classes stored in the TTree if any.
 
 // Fixed size dimensions of array or collections stored in the TTree if any.
@@ -35,6 +38,16 @@ class CLAStoHS : public TSelector, public  THSOutput {
   TLorentzVector* fProton; //The scattered proton from the gamma interaction
   TLorentzVector* fPiM; // The Pi Minus 
   TLorentzVector* fPiP; // The Pi Plus
+  TLorentzVector* f2Pi; // Both pions
+  TLorentzVector* fMissOmegaPiP; //Pi+ and missing mass lorentz vector
+  TLorentzVector* fMissOmegaPiM; //Pi- and missing mass lorentz vector
+  TLorentzVector* fProtonPiP; //Proton and the PiP
+  TLorentzVector* fProtonPiM; //Proton and the PiM
+
+  Float_t Mmiss; //the overall missing mass
+  Float_t MPiP; //mass of the Pi+
+  Float_t MPiM; //mass of the Pi-
+  Float_t M2Pi; //mass of both pions
 
   //public:
   //Functions used to process data
@@ -482,7 +495,7 @@ class CLAStoHS : public TSelector, public  THSOutput {
   //fOutName - if full filename will just fill the single file with output of all input
 
 //Place to null pointers in the contructor
- CLAStoHS(TTree * /*tree*/ =0) : THSOutput(), fHSgamma(0), fMissing(0), fChain(0), fPionComb(0), fBeamEnergySelection(0), fProton(0), total(0), g2(0), fPiP(0), fPiM(0) { }
+ CLAStoHS(TTree * /*tree*/ =0) : THSOutput(), fHSgamma(0), fMissing(0), fChain(0), fPionComb(0), fBeamEnergySelection(0), fProton(0), total(0), g2(0), fPiP(0), fPiM(0), f2Pi(0), fMissOmegaPiP(0), fMissOmegaPiM(0), fProtonPiP(0), fProtonPiM(0) { }
   //CLAStoHS(TTree * /*tree*/ =0) : THSOutput(), fHSgamma(0), fMissing(0), fChain(0) { fOutName="/home/dglazier/Work/Research/HaSpect/data/pippippimMn_HS2/OneFile.root";}
 
   virtual ~CLAStoHS();
@@ -499,6 +512,7 @@ class CLAStoHS : public TSelector, public  THSOutput {
   virtual TList  *GetOutputList() const { return fOutput; }
   virtual void    SlaveTerminate();
   virtual void    Terminate();
+
 
   //Add THSHistoFunctions
   virtual void HistogramList(TString sLabel);

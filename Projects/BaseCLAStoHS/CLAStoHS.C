@@ -44,9 +44,13 @@ CLAStoHS::~CLAStoHS(){
   SafeDelete(fPionComb); //Added for fPionComb 1
   SafeDelete(fPiP); //Pi plus
   SafeDelete(fPiM); //Pi Minus
+  SafeDelete(f2Pi); //Both pions
   SafeDelete(fBeamEnergySelection); //Added for selecting beam energies of interest
   SafeDelete(fProton); //Added for looking at the scattered proton
-
+  SafeDelete(fMissOmegaPiP); //Adding for the Pi+ missing combination
+  SafeDelete(fMissOmegaPiM); //Adding for the Pi- missing combination
+  SafeDelete(fProtonPiP); //Proton and Pi+ Combination
+  SafeDelete(fProtonPiM); //Proton and Pi- Combination
   SafeDelete(total); //Histograms for the getweight function
   SafeDelete(g2);    //Histograms for the getweight function
 
@@ -75,17 +79,29 @@ void CLAStoHS::SlaveBegin(TTree * /*tree*/)
   fMissing=new TLorentzVector(); //missing
   fPiP=new TLorentzVector(); //PiP
   fPiM=new TLorentzVector(); //PiM
+  f2Pi=new TLorentzVector(); //2 Pions (Pi+ and Pi-)
   fPionComb=new TLorentzVector(); //Pion Combination
   fBeamEnergySelection=new TLorentzVector();
   fProton=new TLorentzVector(); //Scattered Proton
+  fMissOmegaPiP=new TLorentzVector(); //Pi+ and Missing 4 Vector
+  fMissOmegaPiM=new TLorentzVector(); //Pi- and Missing 4 Vector
+  fProtonPiP=new TLorentzVector(); //Proton and Pi+
+  fProtonPiM=new TLorentzVector(); //Proton and Pi-
 
   fOutTree->Branch("beam",&fHSgamma,buff,split);
   fOutTree->Branch("miss",&fMissing,buff,split);
   fOutTree->Branch("PiM",&fPiM,buff,split);
   fOutTree->Branch("PiP",&fPiP,buff,split);
+  fOutTree->Branch("2Pi",&f2Pi,buff,split);
   fOutTree->Branch("Pion Comb",&fPionComb,buff,split);
   fOutTree->Branch("Beam Energy Selection",&fBeamEnergySelection,buff,split);
   fOutTree->Branch("Scattered Proton",&fProton,buff,split);
+  fOutTree->Branch("Mmiss",&Mmiss,buff,split);
+  fOutTree->Branch("fgID",&fgID,buff,split);
+
+ // //sWeighter make new output tree
+ //   fOutTree->Branch("SigW",&fSigW,"SigW/F");
+ //   fOutTree->Branch("BckW",&fBckW,"BckW/F");
 
   //Histogram Additions
   //if you want kinematic bins you must define fHisbins here
@@ -110,12 +126,12 @@ Bool_t CLAStoHS::Process(Long64_t entry)
   //  DeltaT();
   // DeltaBeta();
 
-
+ 
   
   if(!IsGoodEventGhosts())
      return kTRUE; //not the event we want so exit
 
- 
+  //if(!GetsWeight()) return kTRUE; 
     
   //check for a good photon
   GetEventPartBranches(entry); //get just the branches required
@@ -145,14 +161,27 @@ Bool_t CLAStoHS::Process(Long64_t entry)
   *fPiP=fDetParticle[1]->P4(); // The Pi Plus
  
   *fPionComb=fDetParticle[0]->P4()+fDetParticle[1]->P4();
+  *f2Pi=fDetParticle[0]->P4()+fDetParticle[1]->P4();
  
   //Ouputting the energy of the tagged photon
-
   *fBeamEnergySelection = fHSgamma->P4();
 
   //Considering the properties of the scattered proton
+  *fProton = /*gTarget-*/fDetParticle[2]->P4();
 
-  *fProton = gTarget-fDetParticle[4]->P4();
+  //Sweights Variables
+  Mmiss=fMissing->M();
+  MPiP=fPiP->M();
+  MPiM=fPiM->M();
+  M2Pi=f2Pi->M();
+
+  //Dalitz Plot variables
+  *fMissOmegaPiP=*fPiP+*fMissing;
+  *fMissOmegaPiM=*fPiM+*fMissing;
+
+  *fProtonPiP=*fProton+*fPiP;
+  *fProtonPiM=*fProton+*fPiM;
+
 
   //Histogram Additions
    
@@ -163,7 +192,6 @@ Bool_t CLAStoHS::Process(Long64_t entry)
   //if(fDetParticle[0]->P4().M()>0) FillHistograms("mass_gt_0",0);
   //if(beam->P4().E()>2) FillHistograms("Eg_gt_2",kinBin);
 
- 
   THSOutput::HSProcessFill();
   return kTRUE;
 }
@@ -295,8 +323,32 @@ void CLAStoHS::HistogramList(TString sLabel){
   // fOutput->Add(MapHist(new TH2F("histo_n13"+sLabel,"Missing Mass vs #omega MassCand3;Missing Mass(GeV/c^{2});#omega Candidate Mass(GeV/c^{2})",50,0.05,0.20,50,0.4,1.0)));
   // fOutput->Add(MapHist(new TH2F("histo_n14"+sLabel,"Missing Mass vs #omega MassCand4;Missing Mass(GeV/c^{2});#omega Candidate Mass(GeV/c^{2})",50,0.05,0.20,50,0.4,1.0)));
 
-fOutput->Add(MapHist(new TH1F("Missing_Mass"+sLabel,"Missing Mass (GeV/c^2);Missing Mass(GeV/c^{2}))",200,-0.2,1.20)));	
+  fOutput->Add(MapHist(new TH1F("Missing_Mass"+sLabel,"Missing Mass (GeV/c^2);Missing Mass(GeV/c^{2}))",200,-0.2,1.20)));
+  
+  fOutput->Add(MapHist(new TH2F("DalitzTest"+sLabel,"MissingMassPiP vs MissingMassPiM;M_{1,2}^{2}(GeV/c^{2})^{2}; M_{1,3}^{2}(GeV/c^{2})^{2}",200,-1,3,200,-1,3)));
+  fOutput->Add(MapHist(new TH2F("DalitzTest2"+sLabel,"MissingMassPiP vs MissingMassPiM;M_{1,2}^{2}(GeV/c^{2})^{2}; M_{1,3}^{2}(GeV/c^{2})^{2}",200,-1,3,200,-1,3)));
+  
+  fOutput->Add(MapHist(new TH2F("DalitzSignal"+sLabel,"MissingMassPiP vs MissingMassPiM;M_{1,2}^{2}(GeV/c^{2})^{2}; M_{1,3}^{2}(GeV/c^{2})^{2}",200,0.5,3,200,0.5,3)));
+  fOutput->Add(MapHist(new TH2F("DalitzLeftSide"+sLabel,"MissingMassPiP vs MissingMassPiM;M_{1,2}^{2}(GeV/c^{2})^{2}; M_{1,3}^{2}(GeV/c^{2})^{2}",200,0.5,3,200,0.5,3)));
+  fOutput->Add(MapHist(new TH2F("DalitzRightSide"+sLabel,"MissingMassPiP vs MissingMassPiM;M_{1,2}^{2}(GeV/c^{2})^{2}; M_{1,3}^{2}(GeV/c^{2})^{2}",200,0.5,3,200,0.5,3)));
+  fOutput->Add(MapHist(new TH2F("DalitzBothSides"+sLabel,"MissingMassPiP vs MissingMassPiM;M_{1,2}^{2}(GeV/c^{2})^{2}; M_{1,3}^{2}(GeV/c^{2})^{2}",200,0.5,3,200,0.5,3)));
+  fOutput->Add(MapHist(new TH2F("DalitzBackSub"+sLabel,"MissingMassPiP vs MissingMassPiM;M_{1,2}^{2}(GeV/c^{2})^{2}; M_{1,3}^{2}(GeV/c^{2})^{2}",200,0.5,3,200,0.5,3)));
 
+  fOutput->Add(MapHist(new TH2F("DalitzSignalProton"+sLabel,"ProtonPiP vs ProtonPiM;M_{1,2}^{2}(GeV/c^{2})^{2}; M_{1,3}^{2}(GeV/c^{2})^{2}",200,0.5,3,200,0.5,3)));
+  fOutput->Add(MapHist(new TH2F("DalitzLeftSideProton"+sLabel,"ProtonPiP vs ProtonPiM;M_{1,2}^{2}(GeV/c^{2})^{2}; M_{1,3}^{2}(GeV/c^{2})^{2}",200,0.5,3,200,0.5,3)));
+  fOutput->Add(MapHist(new TH2F("DalitzRightSideProton"+sLabel,"ProtonPiP vs ProtonPiM;M_{1,2}^{2}(GeV/c^{2})^{2}; M_{1,3}^{2}(GeV/c^{2})^{2}",200,0.5,3,200,0.5,3)));
+  fOutput->Add(MapHist(new TH2F("DalitzBothSidesProton"+sLabel,"ProtonPiP vs ProtonPiM;M_{1,2}^{2}(GeV/c^{2})^{2}; M_{1,3}^{2}(GeV/c^{2})^{2}",200,0.5,3,200,0.5,3)));
+  fOutput->Add(MapHist(new TH2F("DalitzBackSubProton"+sLabel,"ProtonPiP vs ProtonPiM;M_{1,2}^{2}(GeV/c^{2})^{2}; M_{1,3}^{2}(GeV/c^{2})^{2}",200,0.5,3,200,0.5,3)));
+
+
+//Signal distributions
+// fOutput->Add(MapHist(new TH1F("SigMPiP"+sLabel,"Sig M_{#Pi+}"+sLabel,100,0.2,1.5)));
+// fOutput->Add(MapHist(new TH1F("SigMPiM"+sLabel,"Sig M_{#Pi-}"+sLabel,100,0.2,1.5)));
+// fOutput->Add(MapHist(new TH1F("SigM2Pi"+sLabel,"Sig M_{2#Pi}"+sLabel,100,0.5,2)));
+//  //Background distributions
+// fOutput->Add(MapHist(new TH1F("SigMPiP"+sLabel,"Sig M_{#Pi+}"+sLabel,100,0.2,1.5)));
+// fOutput->Add(MapHist(new TH1F("SigMPiM"+sLabel,"Sig M_{#Pi-}"+sLabel,100,0.2,1.5)));
+// fOutput->Add(MapHist(new TH1F("SigM2Pi"+sLabel,"Sig M_{2#Pi}"+sLabel,100,0.5,2)));
 
 
 //end of histogram list
@@ -319,6 +371,40 @@ void CLAStoHS::FillHistograms(TString sCut,Int_t bin) {
   // FindHist("histo_n14"+sLabel)->Fill(fMissing->M(), fOmegaCand4->M());
 
    FindHist("Missing_Mass"+sLabel)->Fill(fMissing->M());
+
+
+   FindHist("DalitzTest"+sLabel)->Fill((Mmiss+MPiP)*(Mmiss+MPiP),(Mmiss+MPiM)*(Mmiss+MPiM));
+   FindHist("DalitzTest2"+sLabel)->Fill(fMissOmegaPiP->M2(),fMissOmegaPiM->M2());
+
+   if(Mmiss >= 0.762 && Mmiss<= 0.802){
+     FindHist("DalitzSignal"+sLabel)->Fill(fMissOmegaPiP->M2(),fMissOmegaPiM->M2());
+     FindHist("DalitzSignalProton"+sLabel)->Fill(fProtonPiP->M2(),fProtonPiM->M2());
+   }
+   if(Mmiss >= 0.722 && Mmiss<= 0.762){
+     FindHist("DalitzLeftSide"+sLabel)->Fill(fMissOmegaPiP->M2(),fMissOmegaPiM->M2());
+     FindHist("DalitzBothSides"+sLabel)->Fill(fMissOmegaPiP->M2(),fMissOmegaPiM->M2());
+     FindHist("DalitzLeftSideProton"+sLabel)->Fill(fProtonPiP->M2(),fProtonPiM->M2());
+     FindHist("DalitzBothSidesProton"+sLabel)->Fill(fProtonPiP->M2(),fProtonPiM->M2());
+
+   }
+   if(Mmiss >= 0.802 && Mmiss<= 0.842){
+     FindHist("DalitzRightSide"+sLabel)->Fill(fMissOmegaPiP->M2(),fMissOmegaPiM->M2());
+     FindHist("DalitzBothSides"+sLabel)->Fill(fMissOmegaPiP->M2(),fMissOmegaPiM->M2());
+     FindHist("DalitzRightSideProton"+sLabel)->Fill(fProtonPiP->M2(),fProtonPiM->M2());
+     FindHist("DalitzBothSidesProton"+sLabel)->Fill(fProtonPiP->M2(),fProtonPiM->M2());
+   }
+
+
+ 
+   //Histograms with signal weight
+   // FindHist("SigMPiP"+sLabel)->Fill(MPiP,fSigW);
+   // FindHist("SigMPiM"+sLabel)->Fill(MPiM,fSigW);
+   // FindHist("SigM2Pi"+sLabel)->Fill(M2Pi,fSigW);
+
+   // //Histograms with background weight
+   // FindHist("BckMPiP"+sLabel)->Fill(MPiP,fBckW);
+   // FindHist("BckMPiM"+sLabel)->Fill(MPiM,fBckW);
+   // FindHist("BckM2Pi"+sLabel)->Fill(M2Pi,fBckW);
   
 }
 

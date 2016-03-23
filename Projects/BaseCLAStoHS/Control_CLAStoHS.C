@@ -27,6 +27,30 @@
   // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_19.root");
   // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/FullStatsFilter4/data_filtered_20.root");
 
+  //Full Stats Missing Pi0 and Missing Omega Data
+  tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/skims2016/MissingPi0andMissingOmega1/set1/batch*.root");
+  tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/skims2016/MissingPi0andMissingOmega1/set2/batch*.root");
+  tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/skims2016/MissingPi0andMissingOmega1/set3/batch*.root");
+  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/skims2016/MissingPi0andMissingOmega1/set1/batch1.root");
+  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/skims2016/MissingPi0andMissingOmega1/set2/batch2.root");
+  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/skims2016/MissingPi0andMissingOmega1/set3/batch3.root");
+  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/skims2016/MissingPi0andMissingOmega1/set1/batch4.root");
+  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/skims2016/MissingPi0andMissingOmega1/set2/batch5.root");
+  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/skims2016/MissingPi0andMissingOmega1/set3/batch6.root");
+  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/skims2016/MissingPi0andMissingOmega1/set1/batch7.root");
+  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/skims2016/MissingPi0andMissingOmega1/set2/batch8.root");
+  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/skims2016/MissingPi0andMissingOmega1/set3/batch9.root");
+  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/skims2016/MissingPi0andMissingOmega1/set1/batch10.root");
+  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/skims2016/MissingPi0andMissingOmega1/set2/batch11.root");
+  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/skims2016/MissingPi0andMissingOmega1/set3/batch12.root");
+  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/skims2016/MissingPi0andMissingOmega1/set1/batch13.root");
+  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/skims2016/MissingPi0andMissingOmega1/set2/batch14.root");
+  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/skims2016/MissingPi0andMissingOmega1/set3/batch15.root");
+  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/skims2016/MissingPi0andMissingOmega1/set1/batch16.root");
+  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/skims2016/MissingPi0andMissingOmega1/set2/batch17.root");
+  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/skims2016/MissingPi0andMissingOmega1/set3/batch18.root");
+  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/skims2016/MissingPi0andMissingOmega1/set1/batch19.root");
+  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/skims2016/MissingPi0andMissingOmega1/set2/batch20.root");
 
   //Edgen Phase Space Events 1 million full phase space skim 1
 
@@ -39,13 +63,17 @@
   //Testing skims
 
   // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/skims2016/data_filtered.root");
-  tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/skims2016/tighterfilter4.root");
+  // tree->Add("/Disk/ds-sopa-group/np/thehubdata/thehub6/shughes/Haspect/OmegaPiPi/skims2016/MissingPi0andMissingOmega1/batch1.root");
+  //tree->Add("/phys/linux/s0677668/Haspect/TutorialDatafiles/*.root");
+  // tree->Add("/phys/linux/s0677668/Haspect/OmegaPiPPiMPDataPortion/2016/Feb/sWeightTest3.root");
+
 
   //Set the ouput directory or file (if full file name is given just 1 file is created, while if a directory it will be created and filled with files of the same name as the input 
   // gSystem->Setenv("HSOUT",
   //		   "/home/dglazier/Work/Research/HaSpect/data/g11pippippim_missn_HS/");
 
-  gSystem->Setenv("HSOUT", "/phys/linux/s0677668/Haspect/OmegaPiPPiMPDataPortion/2016/Feb/RealData/NewSkim5runsTight4MissOmega1.root");
+  gSystem->Setenv("HSOUT", "/phys/linux/s0677668/Haspect/OmegaPiPPiMPDataPortion/2016/Feb/RealData/FullStatsTight5MissOmega1.root");
+  //gSystem->Setenv("HSOUT", "/phys/linux/s0677668/Haspect/OmegaPiPPiMPDataPortion/2016/Feb/sWeightTestWeightedData1.root");
 
   // gSystem->Setenv("HSOUT", "/phys/linux/s0677668/Haspect/OmegaPiPPiMPDataPortion/2016/Feb/PhaseS/DeltaBeta1milEvents4.root");
   // gSystem->Setenv("HSOUT", "/phys/linux/s0677668/Haspect/OmegaPiPPiMPDataPortion/2016/Feb/PhaseS/DeltaB3.root");
@@ -65,4 +93,6 @@
   // tree->Process("CLAStoHS.C++","pi+:pi+:pi-:proton");
   // tree->Process("CLAStoHS.C++","pi+:pi-:pi-:proton");
   tree->Process("CLAStoHS.C++","pi+:pi-:proton");
+  // tree->Process("CLAStoHS.C++","sPlotsTest4.root");
+  //   tree->Process("CLAStoHS.C++","pi+:pi+:pi-");
 }
